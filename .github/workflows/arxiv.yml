@@ -1,0 +1,28 @@
+name: Arxiv Daily Digest
+
+on:
+  schedule:
+    - cron: '0 1 * * *'  # 每天 UTC 时间 1 点运行（北京时间 9 点）
+  workflow_dispatch:     # 可手动运行
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install dependencies
+        run: pip install feedparser
+
+      - name: Run arxiv digest script
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        run: |
+          python arxiv_daily_digest_simple.py
