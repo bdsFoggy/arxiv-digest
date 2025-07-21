@@ -1,8 +1,9 @@
 name: Arxiv Daily Digest
 
 on:
+  push:           # 添加这行！
   schedule:
-    - cron: '*/2 * * * *'  # 每2分钟运行一次
+    - cron: '27 14 * * *'
   workflow_dispatch:
 
 jobs:
