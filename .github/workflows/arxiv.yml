@@ -3,7 +3,7 @@ name: Arxiv Daily Digest
 on:
   push:           # 添加这行！
   schedule:
-    - cron: '14 13 * * *'
+    - cron: '17 13 * * *'
   workflow_dispatch:
 
 jobs:
