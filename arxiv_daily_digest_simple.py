@@ -178,3 +178,5 @@ if __name__ == "__main__":
     today_str = datetime.now().strftime("%Y-%m-%d")
     subject = f"📬 arXiv Digest – {today_str} | {total_groups_with_hits} Groups Matched"
     send_email(subject, email_body)
+
+# dummy comment to trigger push
