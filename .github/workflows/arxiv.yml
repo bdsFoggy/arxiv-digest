@@ -2,7 +2,7 @@ name: Arxiv Daily Digest
 
 on:
   schedule:
-    - cron: '59 12 * * *'  # 每天 UTC 时间 1 点运行（北京时间 9 点）
+    - cron: '02 13 * * *'  # 每天 UTC 时间 1 点运行（北京时间 9 点）
   workflow_dispatch:     # 可手动运行
 
 jobs:
