@@ -5,10 +5,12 @@ from email.mime.text import MIMEText
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 import re
+import os
+
 
 # ---------- 配置 ----------
-SENDER_EMAIL = "foggymature@gmail.com"
-SENDER_PASSWORD = "sivgmopcawzddjgx"
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 RECEIVER_EMAIL = "foggymature@gmail.com"
 STRICT_CATEGORY_MODE = True  # 只处理光学/量子相关类别的论文
 DAYS_BACK = 5
