@@ -135,7 +135,7 @@ def send_email(subject, body):
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
     msg["From"] = SENDER_EMAIL
-    msg["To"] = RECEIVER_EMAIL
+    msg["To"] = ", ".join(RECEIVER_EMAILS)  # 邮件头展示用
 
     try:
         server = smtplib.SMTP("smtp.gmail.com", 587)
