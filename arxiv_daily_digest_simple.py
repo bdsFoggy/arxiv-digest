@@ -11,7 +11,7 @@ import os
 # ---------- 配置 ----------
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
-RECEIVER_EMAIL = "foggymature@gmail.com"
+RECEIVER_EMAILS = ["foggymature@gmail.com", "mobius3516@gmail.com"]
 STRICT_CATEGORY_MODE = True  # 只处理光学/量子相关类别的论文
 DAYS_BACK = 5
 
