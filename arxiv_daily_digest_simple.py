@@ -135,17 +135,23 @@ def send_email(subject, body):
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
     msg["From"] = SENDER_EMAIL
-    msg["To"] = ", ".join(RECEIVER_EMAILS)  # 邮件头展示用
+    msg["To"] = ", ".join(RECEIVER_EMAILS)  # 仅用于邮件头展示
 
     try:
         server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.ehlo()
         server.starttls()
+        server.ehlo()
         server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
+
+        # 关键：这里必须传列表 RECEIVER_EMAILS
+        server.sendmail(SENDER_EMAIL, RECEIVER_EMAILS, msg.as_string())
         server.quit()
-        print("✅ 邮件发送成功！")
+        print("Email sent to:", RECEIVER_EMAILS)
+
     except Exception as e:
-        print("❌ 邮件发送失败：", str(e))
+        print("Email send failed:", str(e))
+        raise  # 关键：让 GitHub Actions 失败，便于排查
 
 # ---------- 去重逻辑 ----------
 def deduplicate_grouped_entries(grouped_entries):
