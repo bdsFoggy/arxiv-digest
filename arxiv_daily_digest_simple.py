@@ -43,14 +43,14 @@ CATEGORIES = [
 # 每页结果数
 PAGE_SIZE = 100
 
-# 每一批查询包含多少关键词，避免 URL 过长
-KEYWORDS_PER_QUERY = 8
+# 减小单次查询长度
+KEYWORDS_PER_QUERY = 3
 
-# 单批关键词最多读取多少页
-MAX_PAGES_PER_QUERY = 5
+# 避免失败后快速轰炸 API
+MAX_RETRIES = 5
 
-# API 重试次数
-MAX_RETRIES = 4
+# 每次正常请求之间等待 10 秒
+REQUEST_INTERVAL_SECONDS = 10
 
 # arXiv API 请求间隔，避免限流
 REQUEST_INTERVAL_SECONDS = 3
@@ -334,7 +334,8 @@ def normalize_title_for_deduplication(title):
 
 def fetch_arxiv_feed(url):
     """
-    带状态检查、指数退避和重试的 arXiv API 请求。
+    带限流处理和重试的 arXiv API 请求。
+    429 时需要明显延长等待时间。
     """
     last_error = None
 
@@ -355,10 +356,7 @@ def fetch_arxiv_feed(url):
         status = getattr(feed, "status", None)
         bozo = bool(getattr(feed, "bozo", False))
 
-        # 某些环境不提供 status，但成功返回 entries
-        status_ok = status in (None, 200)
-
-        if status_ok and not bozo:
+        if status in (None, 200) and not bozo:
             print(
                 f"   HTTP status: {status}, "
                 f"entries: {len(feed.entries)}"
@@ -379,14 +377,29 @@ def fetch_arxiv_feed(url):
 
         print(f"   ⚠️ arXiv API error: {last_error}")
 
-        if attempt < MAX_RETRIES:
-            wait_seconds = 5 * (2 ** (attempt - 1))
-            print(f"   Retrying in {wait_seconds} seconds...")
-            time.sleep(wait_seconds)
+        if attempt >= MAX_RETRIES:
+            break
+
+        if status == 429:
+            # 限流后不能立刻重试
+            wait_seconds = 90 * attempt
+        elif status in (500, 502, 503, 504):
+            # arXiv 服务端临时故障
+            wait_seconds = 30 * attempt
+        else:
+            wait_seconds = 20 * attempt
+
+        print(
+            f"   Waiting {wait_seconds} seconds "
+            "before retry..."
+        )
+        time.sleep(wait_seconds)
 
     raise RuntimeError(
-        "arXiv API 请求连续失败："
-        f"{last_error}\nURL: {url}"
+        "arXiv API 请求连续失败。"
+        "这通常是临时限流或服务端故障，"
+        "请稍后重新运行。\n"
+        f"Last error: {last_error}"
     )
 
 
