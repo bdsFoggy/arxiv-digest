@@ -46,6 +46,9 @@ PAGE_SIZE = 100
 # 减小单次查询长度
 KEYWORDS_PER_QUERY = 3
 
+# 每批关键词最多读取多少页
+MAX_PAGES_PER_QUERY = 5
+
 # 避免失败后快速轰炸 API
 MAX_RETRIES = 5
 
