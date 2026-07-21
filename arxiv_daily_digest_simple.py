@@ -26,7 +26,7 @@ RECEIVER_EMAILS = [
 LOCAL_TIMEZONE = ZoneInfo("Asia/Singapore")
 
 # 检索最近多少天内首次发布或更新的论文
-DAYS_BACK = 5
+DAYS_BACK = 2
 
 # 是否严格限制 arXiv 分类
 STRICT_CATEGORY_MODE = True
