@@ -7,7 +7,10 @@ import unicodedata
 
 from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
+from email.utils import parsedate_to_datetime
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 
@@ -43,20 +46,28 @@ CATEGORIES = [
 # 每页结果数
 PAGE_SIZE = 100
 
-# 减小单次查询长度
-KEYWORDS_PER_QUERY = 3
+# 每次查询包含的关键词数。
+# 原来为 3，这里改为 6，可明显减少 API 请求次数，
+# 同时仍保持 URL 长度在较安全的范围内。
+KEYWORDS_PER_QUERY = 6
 
 # 每批关键词最多读取多少页
 MAX_PAGES_PER_QUERY = 5
 
-# 避免失败后快速轰炸 API
-MAX_RETRIES = 5
+# 单次 HTTP 请求最多尝试次数。
+# 若连续多次失败，会把该关键词批次标记为失败，而不是立刻让整个脚本崩溃。
+MAX_RETRIES = 4
 
-# 每次正常请求之间等待 10 秒
+# 任意两次 arXiv API 请求之间至少间隔 10 秒。
 REQUEST_INTERVAL_SECONDS = 10
 
-# arXiv API 请求间隔，避免限流
-REQUEST_INTERVAL_SECONDS = 3
+# 单次 HTTP 请求超时
+HTTP_TIMEOUT_SECONDS = 45
+
+# 如果整个运行中已有两个关键词批次在完整重试后仍失败，
+# 说明 arXiv API 很可能处于持续故障/限流状态。
+# 此时停止继续轰炸 API，并发送“不完整检索”邮件。
+MAX_FAILED_BATCHES_BEFORE_ABORT = 2
 
 BASE_URL = "https://export.arxiv.org/api/query?"
 
@@ -335,10 +346,104 @@ def normalize_title_for_deduplication(title):
 # arXiv API
 # ============================================================
 
+class ArxivAPIError(RuntimeError):
+    """arXiv API 在完整重试后仍无法正常返回。"""
+
+
+_LAST_REQUEST_MONOTONIC = None
+
+
+def wait_for_request_slot():
+    """
+    保证任意两次 HTTP 请求的起始时间至少相隔
+    REQUEST_INTERVAL_SECONDS 秒。
+    """
+    global _LAST_REQUEST_MONOTONIC
+
+    now = time.monotonic()
+
+    if _LAST_REQUEST_MONOTONIC is not None:
+        elapsed = now - _LAST_REQUEST_MONOTONIC
+        remaining = REQUEST_INTERVAL_SECONDS - elapsed
+
+        if remaining > 0:
+            print(
+                f"   Rate-limit pause: "
+                f"{remaining:.1f} seconds"
+            )
+            time.sleep(remaining)
+
+    _LAST_REQUEST_MONOTONIC = time.monotonic()
+
+
+def parse_retry_after(value):
+    """
+    解析 HTTP Retry-After。
+    既支持秒数，也支持 HTTP-date。
+    """
+    if not value:
+        return None
+
+    value = value.strip()
+
+    if value.isdigit():
+        return max(0, int(value))
+
+    try:
+        retry_datetime = parsedate_to_datetime(value)
+
+        if retry_datetime.tzinfo is None:
+            retry_datetime = retry_datetime.replace(
+                tzinfo=timezone.utc
+            )
+
+        seconds = int(
+            (
+                retry_datetime.astimezone(timezone.utc)
+                - utc_now()
+            ).total_seconds()
+        )
+
+        return max(0, seconds)
+
+    except Exception:
+        return None
+
+
+def get_retry_wait_seconds(status, attempt, retry_after=None):
+    """
+    根据 HTTP 状态码给出退避时间。
+
+    429 使用更长的等待时间。
+    5xx 使用逐步增加的服务端故障退避。
+    Retry-After 若存在则优先尊重。
+    """
+    if status == 429:
+        calculated = min(180 * attempt, 600)
+
+    elif status in (500, 502, 503, 504):
+        calculated = min(60 * attempt, 300)
+
+    else:
+        calculated = min(30 * attempt, 180)
+
+    if retry_after is not None:
+        calculated = max(calculated, retry_after)
+
+    return calculated
+
+
 def fetch_arxiv_feed(url):
     """
-    带限流处理和重试的 arXiv API 请求。
-    429 时需要明显延长等待时间。
+    可靠地请求 arXiv API。
+
+    主要改动：
+    1. 显式设置 HTTP timeout。
+    2. 显式处理 429/5xx。
+    3. 尊重 Retry-After。
+    4. 保证请求之间至少间隔 10 秒。
+    5. 完整重试后抛出 ArxivAPIError，
+       由上层决定是否继续，而不是直接让整个日报崩溃。
     """
     last_error = None
 
@@ -348,49 +453,95 @@ def fetch_arxiv_feed(url):
             f"{attempt}/{MAX_RETRIES}"
         )
 
-        feed = feedparser.parse(
-            url,
-            request_headers={
-                "User-Agent": USER_AGENT,
-                "Accept": "application/atom+xml",
-            },
-        )
+        wait_for_request_slot()
 
-        status = getattr(feed, "status", None)
-        bozo = bool(getattr(feed, "bozo", False))
+        status = None
+        retry_after = None
 
-        if status in (None, 200) and not bozo:
-            print(
-                f"   HTTP status: {status}, "
-                f"entries: {len(feed.entries)}"
+        try:
+            request = Request(
+                url,
+                headers={
+                    "User-Agent": USER_AGENT,
+                    "Accept": "application/atom+xml",
+                },
             )
-            return feed
 
-        bozo_exception = getattr(
-            feed,
-            "bozo_exception",
-            None,
+            with urlopen(
+                request,
+                timeout=HTTP_TIMEOUT_SECONDS,
+            ) as response:
+                status = response.getcode()
+                retry_after = parse_retry_after(
+                    response.headers.get("Retry-After")
+                )
+                payload = response.read()
+
+            feed = feedparser.parse(payload)
+            bozo = bool(getattr(feed, "bozo", False))
+
+            if status == 200 and not bozo:
+                print(
+                    f"   HTTP status: {status}, "
+                    f"entries: {len(feed.entries)}"
+                )
+                return feed
+
+            bozo_exception = getattr(
+                feed,
+                "bozo_exception",
+                None,
+            )
+
+            last_error = (
+                f"HTTP status={status}, "
+                f"bozo={bozo}, "
+                f"error={bozo_exception}"
+            )
+
+        except HTTPError as error:
+            status = error.code
+            retry_after = parse_retry_after(
+                error.headers.get("Retry-After")
+                if error.headers
+                else None
+            )
+
+            last_error = (
+                f"HTTP status={status}, "
+                f"reason={error.reason}"
+            )
+
+        except URLError as error:
+            last_error = (
+                "network error="
+                f"{getattr(error, 'reason', error)}"
+            )
+
+        except TimeoutError:
+            last_error = (
+                f"timeout after "
+                f"{HTTP_TIMEOUT_SECONDS} seconds"
+            )
+
+        except Exception as error:
+            last_error = (
+                f"{type(error).__name__}: {error}"
+            )
+
+        print(
+            f"   ⚠️ arXiv API error: "
+            f"{last_error}"
         )
-
-        last_error = (
-            f"HTTP status={status}, "
-            f"bozo={bozo}, "
-            f"error={bozo_exception}"
-        )
-
-        print(f"   ⚠️ arXiv API error: {last_error}")
 
         if attempt >= MAX_RETRIES:
             break
 
-        if status == 429:
-            # 限流后不能立刻重试
-            wait_seconds = 90 * attempt
-        elif status in (500, 502, 503, 504):
-            # arXiv 服务端临时故障
-            wait_seconds = 30 * attempt
-        else:
-            wait_seconds = 20 * attempt
+        wait_seconds = get_retry_wait_seconds(
+            status,
+            attempt,
+            retry_after=retry_after,
+        )
 
         print(
             f"   Waiting {wait_seconds} seconds "
@@ -398,10 +549,9 @@ def fetch_arxiv_feed(url):
         )
         time.sleep(wait_seconds)
 
-    raise RuntimeError(
+    raise ArxivAPIError(
         "arXiv API 请求连续失败。"
-        "这通常是临时限流或服务端故障，"
-        "请稍后重新运行。\n"
+        "这通常是临时限流或服务端故障。\n"
         f"Last error: {last_error}"
     )
 
@@ -578,7 +728,7 @@ def merge_paper(existing, incoming):
     return existing
 
 
-def search_group(group_name, keywords):
+def search_group(group_name, keywords, search_state):
     print(f"\n========== {group_name} ==========")
 
     group_results = {}
@@ -592,6 +742,9 @@ def search_group(group_name, keywords):
         keyword_batches,
         start=1,
     ):
+        if search_state["aborted"]:
+            break
+
         print(
             f"\n🔍 Batch {batch_number}/"
             f"{len(keyword_batches)}"
@@ -599,6 +752,7 @@ def search_group(group_name, keywords):
         print("   Keywords:", ", ".join(keyword_batch))
 
         search_query = build_search_query(keyword_batch)
+        batch_failed = False
 
         for page_number in range(MAX_PAGES_PER_QUERY):
             start = page_number * PAGE_SIZE
@@ -609,7 +763,48 @@ def search_group(group_name, keywords):
                 f"start={start}"
             )
 
-            feed = fetch_arxiv_feed(url)
+            try:
+                feed = fetch_arxiv_feed(url)
+
+            except ArxivAPIError as error:
+                batch_failed = True
+
+                failure = {
+                    "group": group_name,
+                    "batch_number": batch_number,
+                    "keywords": list(keyword_batch),
+                    "page_number": page_number + 1,
+                    "error": str(error),
+                }
+
+                search_state["failed_batches"].append(
+                    failure
+                )
+
+                print(
+                    "   ❌ This keyword batch failed "
+                    "after all retries."
+                )
+
+                print(
+                    "   The script will keep any results "
+                    "already collected and continue when safe."
+                )
+
+                if (
+                    len(search_state["failed_batches"])
+                    >= MAX_FAILED_BATCHES_BEFORE_ABORT
+                ):
+                    search_state["aborted"] = True
+
+                    print(
+                        "   🛑 Too many failed batches. "
+                        "Stopping further arXiv requests "
+                        "to avoid repeatedly hitting an "
+                        "unhealthy or rate-limited API."
+                    )
+
+                break
 
             if not feed.entries:
                 print("   No more results.")
@@ -649,9 +844,9 @@ def search_group(group_name, keywords):
                 else:
                     group_results[key] = paper
 
-            # 按更新时间降序排列。
-            # 如果本页最旧结果已经早于 cutoff，
-            # 后面的页面不需要继续读取。
+            # API 已按 lastUpdatedDate 降序排列。
+            # 若本页最旧结果已早于 cutoff，
+            # 后面的页面无需继续。
             if page_updated_times:
                 oldest_on_page = min(page_updated_times)
 
@@ -665,11 +860,8 @@ def search_group(group_name, keywords):
                 print("   Last page reached.")
                 break
 
-            time.sleep(REQUEST_INTERVAL_SECONDS)
-
-        # 每批关键词之间暂停，避免 API 限流
-        if batch_number < len(keyword_batches):
-            time.sleep(REQUEST_INTERVAL_SECONDS)
+        if batch_failed and search_state["aborted"]:
+            break
 
     results = list(group_results.values())
 
@@ -748,21 +940,18 @@ def deduplicate_all_groups(grouped_entries):
 # 邮件正文
 # ============================================================
 
-def format_digest(grouped_entries):
+def format_digest(grouped_entries, search_state):
     total_papers = sum(
         len(papers)
         for papers in grouped_entries.values()
     )
 
-    if total_papers == 0:
-        return (
-            f"🛑 最近 {DAYS_BACK} 天内，"
-            "arXiv 上没有找到首次发布或更新且匹配关键词的论文。"
-        )
-
     generated_time = local_now().strftime(
         "%Y-%m-%d %H:%M %Z"
     )
+
+    failed_batches = search_state["failed_batches"]
+    incomplete = bool(failed_batches)
 
     lines = [
         "📚 arXiv 光子学与量子信息论文更新",
@@ -770,9 +959,63 @@ def format_digest(grouped_entries):
         f"生成时间：{generated_time}",
         f"检索范围：最近 {DAYS_BACK} 天内首次发布或更新",
         "排序依据：arXiv lastUpdatedDate",
-        f"统一去重后共 {total_papers} 篇",
-        "",
     ]
+
+    if incomplete:
+        lines.extend(
+            [
+                "",
+                "⚠️ 注意：本次 arXiv 检索未完全完成。",
+                (
+                    f"共有 {len(failed_batches)} 个关键词批次 "
+                    "在完整重试后仍因 API 限流或服务端故障失败。"
+                ),
+                (
+                    "以下论文列表保留了成功检索到的结果，"
+                    "因此本次数量可能低于实际数量。"
+                ),
+            ]
+        )
+
+        if search_state["aborted"]:
+            lines.append(
+                "为避免持续触发 429/503，程序已提前停止后续 API 请求。"
+            )
+
+        lines.append("")
+
+        for failure in failed_batches:
+            lines.append(
+                "   - "
+                f"{failure['group']} | "
+                f"Batch {failure['batch_number']} | "
+                f"Page {failure['page_number']} | "
+                "Keywords: "
+                + ", ".join(failure["keywords"])
+            )
+
+    lines.extend(
+        [
+            "",
+            f"统一去重后共 {total_papers} 篇",
+            "",
+        ]
+    )
+
+    if total_papers == 0:
+        if incomplete:
+            lines.append(
+                "🛑 本次没有得到可用论文结果，"
+                "但由于 arXiv API 检索不完整，"
+                "不能据此判断最近两天确实没有匹配论文。"
+            )
+        else:
+            lines.append(
+                f"🛑 最近 {DAYS_BACK} 天内，"
+                "arXiv 上没有找到首次发布或更新且匹配关键词的论文。"
+            )
+
+        return "\n".join(lines)
 
     for group_name, papers in grouped_entries.items():
         if not papers:
@@ -817,6 +1060,11 @@ def format_digest(grouped_entries):
     lines.append(
         f"📊 共找到 {total_papers} 篇去重后的论文。"
     )
+
+    if incomplete:
+        lines.append(
+            "⚠️ 本次为不完整检索，请以明日自动运行或手动重跑结果为准。"
+        )
 
     return "\n".join(lines)
 
@@ -909,12 +1157,22 @@ def main():
         ),
     )
 
+    search_state = {
+        "failed_batches": [],
+        "aborted": False,
+    }
+
     all_grouped = {}
 
     for group_name, keywords in KEYWORD_GROUPS.items():
+        if search_state["aborted"]:
+            all_grouped[group_name] = []
+            continue
+
         results = search_group(
             group_name,
             keywords,
+            search_state,
         )
 
         all_grouped[group_name] = results
@@ -935,13 +1193,22 @@ def main():
     )
 
     email_body = format_digest(
-        deduplicated_groups
+        deduplicated_groups,
+        search_state,
     )
 
     today_string = local_now().strftime("%Y-%m-%d")
 
+    if search_state["failed_batches"]:
+        subject_prefix = "⚠️ arXiv Digest"
+        completeness_text = "INCOMPLETE | "
+    else:
+        subject_prefix = "📬 arXiv Digest"
+        completeness_text = ""
+
     subject = (
-        f"📬 arXiv Digest – {today_string} | "
+        f"{subject_prefix} – {today_string} | "
+        f"{completeness_text}"
         f"{total_papers} Papers | "
         f"{groups_with_hits} Groups"
     )
@@ -954,6 +1221,18 @@ def main():
         subject,
         email_body,
     )
+
+    # 只要邮件成功发出，就让 GitHub Action 正常结束。
+    # 如果 arXiv API 不完整，邮件主题和正文都会明确标记 INCOMPLETE，
+    # 避免出现“红色失败但你不知道发生了什么”的情况。
+    if search_state["failed_batches"]:
+        print(
+            "⚠️ Digest sent with incomplete-search warning."
+        )
+    else:
+        print(
+            "✅ Digest completed successfully."
+        )
 
 
 if __name__ == "__main__":
