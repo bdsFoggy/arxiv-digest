@@ -1,8 +1,18 @@
 {
   "schema": 1,
-  "pending": null,
+  "pending": {
+    "started_at": "2026-09-13T16:35:43.749869+00:00",
+    "cutoff": "2026-09-06T16:35:43.749869+00:00",
+    "config_hash": "35778fd3e2dcaa99494ae3c104b59f73393820b8023adcc630e08168a3b57bfc",
+    "batches": {
+      "1-1": {
+        "done": false,
+        "papers": []
+      }
+    }
+  },
   "last_complete_at": null,
   "last_complete_day": null,
-  "not_before": "2026-09-13T11:47:10.071185+00:00",
-  "last_notice_day": null
+  "not_before": "2026-09-13T17:36:59.152121+00:00",
+  "last_notice_day": "2026-09-14"
 }
