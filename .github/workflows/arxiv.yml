@@ -1,29 +1,82 @@
 name: Arxiv Daily Digest
 
 on:
-  push:           # 添加这行！
   schedule:
-    - cron: '30 22 * * *'
+    # Singapore time 08:07; later slots only recover incomplete work.
+    - cron: '7 0 * * *'
+    - cron: '17 2 * * *'
+    - cron: '27 6 * * *'
+    - cron: '37 12 * * *'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'resume = normal digest; diagnose = query only, no email'
+        type: choice
+        default: resume
+        options:
+          - resume
+          - diagnose
+
+permissions:
+  contents: write
+
+concurrency:
+  group: arxiv-digest-global
+  cancel-in-progress: false
 
 jobs:
   run-script:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONUNBUFFERED: '1'
+      DIGEST_STATE_PATH: digest-state.json
+      DIGEST_OUTPUT_DIR: run-output
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
         with:
-          python-version: 3.11
-
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
       - name: Install dependencies
-        run: pip install feedparser
-
-      - name: Run arxiv digest script
+        run: python -m pip install -r requirements.txt
+      - name: Restore recovery checkpoint
+        id: restore
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -u state_store.py restore
+      - name: Fetch digest or run diagnostic
+        id: digest
+        # Leave time for saving state even if a network call stalls.
+        timeout-minutes: 12
         env:
           SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
           SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+          RUN_MODE: ${{ inputs.mode }}
+          RUN_EVENT: ${{ github.event_name }}
+        shell: bash
         run: |
-          python arxiv_daily_digest_simple.py
+          if [ "$RUN_MODE" = "diagnose" ]; then
+            python -u arxiv_daily_digest_simple.py --diagnose
+          elif [ "$RUN_EVENT" = "schedule" ]; then
+            python -u arxiv_daily_digest_simple.py --scheduled
+          else
+            python -u arxiv_daily_digest_simple.py
+          fi
+      - name: Save recovery checkpoint even after failure
+        if: ${{ always() && steps.restore.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python -u state_store.py save
+      - name: Upload diagnostic and recovery backup
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: arxiv-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            run-output/
+            digest-state.json
+          if-no-files-found: warn
+          retention-days: 30

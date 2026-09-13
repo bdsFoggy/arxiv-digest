@@ -1,10 +1,17 @@
+"""arXiv digest with durable recovery and global rate-limit handling.
+Run normally to send the configured digest; --dry-run never sends mail.
+"""
+import argparse
+import hashlib
+import json
 import os
 import re
-import time
 import smtplib
-import feedparser
+import sys
+import time
 import unicodedata
-
+import xml.etree.ElementTree as ET
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 from email.utils import parsedate_to_datetime
@@ -13,26 +20,40 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
-
-# ============================================================
-# 配置
-# ============================================================
+import feedparser
 
 SENDER_EMAIL = os.getenv("SENDER_EMAIL")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
-
-RECEIVER_EMAILS = [
-    "foggymature@gmail.com",
-    "mobius3516@gmail.com",
-]
-
+RECEIVER_EMAILS = ["foggymature@gmail.com", "mobius3516@gmail.com"]
 LOCAL_TIMEZONE = ZoneInfo("Asia/Singapore")
-
-# 检索最近多少天内首次发布或更新的论文
 DAYS_BACK = 2
-
-# 是否严格限制 arXiv 分类
 STRICT_CATEGORY_MODE = True
+PAGE_SIZE = 100
+KEYWORDS_PER_QUERY = 6
+MAX_PAGES_PER_QUERY = 50
+REQUEST_INTERVAL_SECONDS = 10
+HTTP_TIMEOUT_SECONDS = 45
+MAX_RESPONSE_BYTES = 8 * 1024 * 1024
+RUN_BUDGET_SECONDS = 600
+STATE_PATH = Path(os.getenv("DIGEST_STATE_PATH", "digest-state.json"))
+OUTPUT_DIR = Path(os.getenv("DIGEST_OUTPUT_DIR", "run-output"))
+BASE_URL = "https://export.arxiv.org/api/query?"
+USER_AGENT = "PhotonicsArxivDigest/3.0 (mailto:foggymature@gmail.com)"
+_CUTOFF = None
+_CLIENT = None
+
+
+def utc_now():
+    return datetime.now(timezone.utc)
+
+
+def local_now():
+    return utc_now().astimezone(LOCAL_TIMEZONE)
+
+
+def get_cutoff_datetime():
+    return _CUTOFF if _CUTOFF is not None else utc_now() - timedelta(days=DAYS_BACK)
+
 
 CATEGORIES = [
     "physics.optics",
@@ -43,43 +64,6 @@ CATEGORIES = [
     "cs.LG",
 ]
 
-# 每页结果数
-PAGE_SIZE = 100
-
-# 每次查询包含的关键词数。
-# 原来为 3，这里改为 6，可明显减少 API 请求次数，
-# 同时仍保持 URL 长度在较安全的范围内。
-KEYWORDS_PER_QUERY = 6
-
-# 每批关键词最多读取多少页
-MAX_PAGES_PER_QUERY = 5
-
-# 单次 HTTP 请求最多尝试次数。
-# 若连续多次失败，会把该关键词批次标记为失败，而不是立刻让整个脚本崩溃。
-MAX_RETRIES = 4
-
-# 任意两次 arXiv API 请求之间至少间隔 10 秒。
-REQUEST_INTERVAL_SECONDS = 10
-
-# 单次 HTTP 请求超时
-HTTP_TIMEOUT_SECONDS = 45
-
-# 如果整个运行中已有两个关键词批次在完整重试后仍失败，
-# 说明 arXiv API 很可能处于持续故障/限流状态。
-# 此时停止继续轰炸 API，并发送“不完整检索”邮件。
-MAX_FAILED_BATCHES_BEFORE_ABORT = 2
-
-BASE_URL = "https://export.arxiv.org/api/query?"
-
-USER_AGENT = (
-    "PhotonicsArxivDigest/2.0 "
-    "contact:foggymature@gmail.com"
-)
-
-
-# ============================================================
-# 关键词组
-# ============================================================
 
 KEYWORD_GROUPS = {
     "Integrated Photonic Materials": [
@@ -220,22 +204,6 @@ KEYWORD_GROUPS = {
 }
 
 
-# ============================================================
-# 基础工具
-# ============================================================
-
-def utc_now():
-    return datetime.now(timezone.utc)
-
-
-def local_now():
-    return datetime.now(LOCAL_TIMEZONE)
-
-
-def get_cutoff_datetime():
-    return utc_now() - timedelta(days=DAYS_BACK)
-
-
 def parse_arxiv_datetime(value):
     """
     将 arXiv 时间转换为带 UTC 时区的 datetime。
@@ -342,40 +310,6 @@ def normalize_title_for_deduplication(title):
     return re.sub(r"[^a-z0-9]+", "", title)
 
 
-# ============================================================
-# arXiv API
-# ============================================================
-
-class ArxivAPIError(RuntimeError):
-    """arXiv API 在完整重试后仍无法正常返回。"""
-
-
-_LAST_REQUEST_MONOTONIC = None
-
-
-def wait_for_request_slot():
-    """
-    保证任意两次 HTTP 请求的起始时间至少相隔
-    REQUEST_INTERVAL_SECONDS 秒。
-    """
-    global _LAST_REQUEST_MONOTONIC
-
-    now = time.monotonic()
-
-    if _LAST_REQUEST_MONOTONIC is not None:
-        elapsed = now - _LAST_REQUEST_MONOTONIC
-        remaining = REQUEST_INTERVAL_SECONDS - elapsed
-
-        if remaining > 0:
-            print(
-                f"   Rate-limit pause: "
-                f"{remaining:.1f} seconds"
-            )
-            time.sleep(remaining)
-
-    _LAST_REQUEST_MONOTONIC = time.monotonic()
-
-
 def parse_retry_after(value):
     """
     解析 HTTP Retry-After。
@@ -408,152 +342,6 @@ def parse_retry_after(value):
 
     except Exception:
         return None
-
-
-def get_retry_wait_seconds(status, attempt, retry_after=None):
-    """
-    根据 HTTP 状态码给出退避时间。
-
-    429 使用更长的等待时间。
-    5xx 使用逐步增加的服务端故障退避。
-    Retry-After 若存在则优先尊重。
-    """
-    if status == 429:
-        calculated = min(180 * attempt, 600)
-
-    elif status in (500, 502, 503, 504):
-        calculated = min(60 * attempt, 300)
-
-    else:
-        calculated = min(30 * attempt, 180)
-
-    if retry_after is not None:
-        calculated = max(calculated, retry_after)
-
-    return calculated
-
-
-def fetch_arxiv_feed(url):
-    """
-    可靠地请求 arXiv API。
-
-    主要改动：
-    1. 显式设置 HTTP timeout。
-    2. 显式处理 429/5xx。
-    3. 尊重 Retry-After。
-    4. 保证请求之间至少间隔 10 秒。
-    5. 完整重试后抛出 ArxivAPIError，
-       由上层决定是否继续，而不是直接让整个日报崩溃。
-    """
-    last_error = None
-
-    for attempt in range(1, MAX_RETRIES + 1):
-        print(
-            f"   API request attempt "
-            f"{attempt}/{MAX_RETRIES}"
-        )
-
-        wait_for_request_slot()
-
-        status = None
-        retry_after = None
-
-        try:
-            request = Request(
-                url,
-                headers={
-                    "User-Agent": USER_AGENT,
-                    "Accept": "application/atom+xml",
-                },
-            )
-
-            with urlopen(
-                request,
-                timeout=HTTP_TIMEOUT_SECONDS,
-            ) as response:
-                status = response.getcode()
-                retry_after = parse_retry_after(
-                    response.headers.get("Retry-After")
-                )
-                payload = response.read()
-
-            feed = feedparser.parse(payload)
-            bozo = bool(getattr(feed, "bozo", False))
-
-            if status == 200 and not bozo:
-                print(
-                    f"   HTTP status: {status}, "
-                    f"entries: {len(feed.entries)}"
-                )
-                return feed
-
-            bozo_exception = getattr(
-                feed,
-                "bozo_exception",
-                None,
-            )
-
-            last_error = (
-                f"HTTP status={status}, "
-                f"bozo={bozo}, "
-                f"error={bozo_exception}"
-            )
-
-        except HTTPError as error:
-            status = error.code
-            retry_after = parse_retry_after(
-                error.headers.get("Retry-After")
-                if error.headers
-                else None
-            )
-
-            last_error = (
-                f"HTTP status={status}, "
-                f"reason={error.reason}"
-            )
-
-        except URLError as error:
-            last_error = (
-                "network error="
-                f"{getattr(error, 'reason', error)}"
-            )
-
-        except TimeoutError:
-            last_error = (
-                f"timeout after "
-                f"{HTTP_TIMEOUT_SECONDS} seconds"
-            )
-
-        except Exception as error:
-            last_error = (
-                f"{type(error).__name__}: {error}"
-            )
-
-        print(
-            f"   ⚠️ arXiv API error: "
-            f"{last_error}"
-        )
-
-        if attempt >= MAX_RETRIES:
-            break
-
-        wait_seconds = get_retry_wait_seconds(
-            status,
-            attempt,
-            retry_after=retry_after,
-        )
-
-        print(
-            f"   Waiting {wait_seconds} seconds "
-            "before retry..."
-        )
-        time.sleep(wait_seconds)
-
-    raise ArxivAPIError(
-        "arXiv API 请求连续失败。"
-        "这通常是临时限流或服务端故障。\n"
-        f"Last error: {last_error}"
-    )
 
 
 def build_search_query(keywords):
@@ -599,10 +387,6 @@ def build_arxiv_url(search_query, start):
 
     return BASE_URL + urlencode(parameters)
 
-
-# ============================================================
-# 搜索与论文解析
-# ============================================================
 
 def parse_entry(entry, group_name, keywords):
     if not is_category_allowed(entry):
@@ -728,160 +512,6 @@ def merge_paper(existing, incoming):
     return existing
 
 
-def search_group(group_name, keywords, search_state):
-    print(f"\n========== {group_name} ==========")
-
-    group_results = {}
-    cutoff = get_cutoff_datetime()
-
-    keyword_batches = list(
-        chunk_list(keywords, KEYWORDS_PER_QUERY)
-    )
-
-    for batch_number, keyword_batch in enumerate(
-        keyword_batches,
-        start=1,
-    ):
-        if search_state["aborted"]:
-            break
-
-        print(
-            f"\n🔍 Batch {batch_number}/"
-            f"{len(keyword_batches)}"
-        )
-        print("   Keywords:", ", ".join(keyword_batch))
-
-        search_query = build_search_query(keyword_batch)
-        batch_failed = False
-
-        for page_number in range(MAX_PAGES_PER_QUERY):
-            start = page_number * PAGE_SIZE
-            url = build_arxiv_url(search_query, start)
-
-            print(
-                f"   Fetching page {page_number + 1}, "
-                f"start={start}"
-            )
-
-            try:
-                feed = fetch_arxiv_feed(url)
-
-            except ArxivAPIError as error:
-                batch_failed = True
-
-                failure = {
-                    "group": group_name,
-                    "batch_number": batch_number,
-                    "keywords": list(keyword_batch),
-                    "page_number": page_number + 1,
-                    "error": str(error),
-                }
-
-                search_state["failed_batches"].append(
-                    failure
-                )
-
-                print(
-                    "   ❌ This keyword batch failed "
-                    "after all retries."
-                )
-
-                print(
-                    "   The script will keep any results "
-                    "already collected and continue when safe."
-                )
-
-                if (
-                    len(search_state["failed_batches"])
-                    >= MAX_FAILED_BATCHES_BEFORE_ABORT
-                ):
-                    search_state["aborted"] = True
-
-                    print(
-                        "   🛑 Too many failed batches. "
-                        "Stopping further arXiv requests "
-                        "to avoid repeatedly hitting an "
-                        "unhealthy or rate-limited API."
-                    )
-
-                break
-
-            if not feed.entries:
-                print("   No more results.")
-                break
-
-            page_updated_times = []
-
-            for entry in feed.entries:
-                entry_updated = parse_arxiv_datetime(
-                    getattr(entry, "updated", None)
-                )
-
-                if entry_updated:
-                    page_updated_times.append(entry_updated)
-
-                paper = parse_entry(
-                    entry,
-                    group_name,
-                    keyword_batch,
-                )
-
-                if paper is None:
-                    continue
-
-                key = paper["base_arxiv_id"]
-
-                if not key:
-                    key = normalize_title_for_deduplication(
-                        paper["title"]
-                    )
-
-                if key in group_results:
-                    group_results[key] = merge_paper(
-                        group_results[key],
-                        paper,
-                    )
-                else:
-                    group_results[key] = paper
-
-            # API 已按 lastUpdatedDate 降序排列。
-            # 若本页最旧结果已早于 cutoff，
-            # 后面的页面无需继续。
-            if page_updated_times:
-                oldest_on_page = min(page_updated_times)
-
-                if oldest_on_page < cutoff:
-                    print(
-                        "   Reached results older than cutoff."
-                    )
-                    break
-
-            if len(feed.entries) < PAGE_SIZE:
-                print("   Last page reached.")
-                break
-
-        if batch_failed and search_state["aborted"]:
-            break
-
-    results = list(group_results.values())
-
-    results.sort(
-        key=lambda paper: paper["updated_datetime"],
-        reverse=True,
-    )
-
-    print(
-        f"✅ {group_name}: "
-        f"{len(results)} unique papers"
-    )
-
-    return results
-
-
-# ============================================================
-# 跨主题统一去重
-# ============================================================
-
 def deduplicate_all_groups(grouped_entries):
     """
     按 arXiv ID 跨所有关键词组去重。
@@ -935,10 +565,6 @@ def deduplicate_all_groups(grouped_entries):
 
     return deduplicated
 
-
-# ============================================================
-# 邮件正文
-# ============================================================
 
 def format_digest(grouped_entries, search_state):
     total_papers = sum(
@@ -1069,10 +695,6 @@ def format_digest(grouped_entries, search_state):
     return "\n".join(lines)
 
 
-# ============================================================
-# 邮件发送
-# ============================================================
-
 def validate_email_config():
     if not SENDER_EMAIL:
         raise RuntimeError(
@@ -1143,97 +765,364 @@ def send_email(subject, body):
             except Exception:
                 pass
 
+# Durable recovery. A completed batch is saved before the next API request.
+def log(message):
+    print(f"{utc_now().isoformat(timespec='seconds')} {message}", flush=True)
 
-# ============================================================
-# 主流程
-# ============================================================
+
+def atomic_json(path, value):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp = path.with_suffix(path.suffix + '.tmp')
+    temp.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding='utf-8')
+    temp.replace(path)
+
+
+def encode_papers(papers):
+    return [{k: v.isoformat() if isinstance(v, datetime) else v
+             for k, v in p.items()} for p in papers]
+
+
+def decode_papers(papers):
+    result = []
+    for paper in papers:
+        p = dict(paper)
+        for key in ('published_datetime', 'updated_datetime'):
+            p[key] = parse_arxiv_datetime(p[key])
+        result.append(p)
+    return result
+
+
+def config_hash():
+    value = [KEYWORD_GROUPS, CATEGORIES, STRICT_CATEGORY_MODE, KEYWORDS_PER_QUERY]
+    return hashlib.sha256(json.dumps(value).encode()).hexdigest()
+
+
+def load_state():
+    if not STATE_PATH.exists():
+        return {'schema': 1, 'pending': None, 'last_complete_at': None,
+                'last_complete_day': None, 'not_before': None,
+                'last_notice_day': None}
+    state = json.loads(STATE_PATH.read_text(encoding='utf-8'))
+    if state.get('schema') != 1:
+        raise RuntimeError('Unsupported state schema; refusing to reset recovery history.')
+    if not all(k in state for k in ('pending', 'last_complete_at', 'not_before')):
+        raise RuntimeError('Invalid state; refusing to silently discard recovery history.')
+    return state
+
+
+class Deferred(RuntimeError):
+    pass
+
+
+class InvalidFeed(RuntimeError):
+    pass
+
+
+def validate_feed(payload):
+    root = ET.fromstring(payload)
+    if root.tag != '{http://www.w3.org/2005/Atom}feed':
+        raise InvalidFeed('Response is not an Atom feed')
+    feed = feedparser.parse(payload)
+    if feed.bozo:
+        raise InvalidFeed(f'Invalid Atom XML: {feed.bozo_exception}')
+    if 'opensearch_totalresults' not in feed.feed:
+        raise InvalidFeed('Missing totalResults; cannot treat response as no papers')
+    total = int(feed.feed.opensearch_totalresults)
+    for entry in feed.entries:
+        if '/api/errors' in entry.get('id', '') or not entry.get('updated'):
+            raise InvalidFeed('API error entry or missing updated timestamp')
+    if total < 0 or (total == 0 and feed.entries):
+        raise InvalidFeed('Inconsistent totalResults')
+    return feed
+
+
+class Client:
+    def __init__(self, state, opener=urlopen, sleeper=time.sleep,
+                 monotonic=time.monotonic, now=utc_now):
+        self.state = state
+        self.opener = opener
+        self.sleep = sleeper
+        self.clock = monotonic
+        self.now = now
+        self.deadline = self.clock() + RUN_BUDGET_SECONDS
+        self.last_start = None
+        self.requests = 0
+
+    def defer(self, reason, seconds=3600):
+        until = self.now() + timedelta(seconds=seconds)
+        current = parse_arxiv_datetime(self.state.get('not_before'))
+        if current and current > until:
+            until = current
+        self.state['not_before'] = until.isoformat()
+        atomic_json(STATE_PATH, self.state)
+        raise Deferred(f'{reason}; next API request no earlier than {until.isoformat()}')
+
+    def slot(self):
+        until = parse_arxiv_datetime(self.state.get('not_before'))
+        if until and until > self.now():
+            raise Deferred(f'Server cooldown remains active until {until.isoformat()}')
+        pause = 0 if self.last_start is None else max(
+            0, REQUEST_INTERVAL_SECONDS - (self.clock() - self.last_start))
+        if self.clock() + pause + HTTP_TIMEOUT_SECONDS >= self.deadline:
+            raise Deferred('Run time budget reached; saved batches will resume next run')
+        if pause:
+            self.sleep(pause)
+        self.last_start = self.clock()
+        self.requests += 1
+
+    def diagnostic(self, url, status, headers, body, elapsed):
+        # Do not record cookies, authorization headers, SMTP credentials or tokens.
+        keep = {'date', 'server', 'content-type', 'retry-after', 'via',
+                'x-cache', 'x-cache-hits', 'x-served-by', 'x-cloud-trace-context',
+                'x-request-id', 'x-timer', 'age'}
+        record = {'time_utc': self.now().isoformat(), 'url': url,
+                  'status': status, 'elapsed_seconds': round(elapsed, 3),
+                  'headers': {k.lower(): v for k, v in headers.items()
+                              if k.lower() in keep},
+                  'body_excerpt': body[:4000].decode('utf-8', 'replace'),
+                  'github_run_id': os.getenv('GITHUB_RUN_ID'),
+                  'github_sha': os.getenv('GITHUB_SHA'),
+                  'runner_os': os.getenv('RUNNER_OS')}
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+        with (OUTPUT_DIR / 'http-diagnostics.jsonl').open('a', encoding='utf-8') as f:
+            f.write(json.dumps(record, ensure_ascii=False) + '\n')
+        log(f'HTTP {status}, {elapsed:.1f}s; diagnostic saved')
+        log(f'Retry-After={record["headers"].get("retry-after", "absent")}; '
+            f'X-Cache={record["headers"].get("x-cache", "absent")}')
+
+    def fetch(self, url):
+        # Only 5xx / transport / invalid XML get one short retry.
+        # A 429/403 opens one GLOBAL circuit immediately. No endpoint/IP switching.
+        for attempt in (1, 2):
+            self.slot()
+            start = self.clock()
+            log(f'API request {self.requests}, attempt {attempt}/2')
+            try:
+                request = Request(url, headers={'User-Agent': USER_AGENT,
+                                               'Accept': 'application/atom+xml'})
+                with self.opener(request, timeout=HTTP_TIMEOUT_SECONDS) as response:
+                    payload = response.read(MAX_RESPONSE_BYTES + 1)
+                    if len(payload) > MAX_RESPONSE_BYTES:
+                        raise InvalidFeed('Response too large')
+                    headers = dict(response.headers)
+                feed = validate_feed(payload)
+                log(f'HTTP 200, entries={len(feed.entries)}, '
+                    f'elapsed={self.clock() - start:.1f}s')
+                self.state['not_before'] = None
+                return feed
+            except HTTPError as error:
+                try:
+                    body = error.read(4000)
+                finally:
+                    error.close()
+                headers = dict(error.headers or {})
+                self.diagnostic(url, error.code, headers, body, self.clock() - start)
+                retry_after = parse_retry_after(error.headers.get('Retry-After')) if error.headers else None
+                if error.code in (429, 403):
+                    self.defer(f'HTTP {error.code}: globally stop further requests',
+                               max(3600, retry_after or 0))
+                if error.code not in (500, 502, 503, 504):
+                    raise RuntimeError(f'HTTP {error.code}; requires query/access inspection') from error
+                if retry_after is not None:
+                    self.defer(f'HTTP {error.code}: honor Retry-After', max(60, retry_after))
+                if attempt == 2:
+                    self.defer(f'HTTP {error.code} persisted after one retry')
+            except (URLError, TimeoutError, OSError, InvalidFeed, ET.ParseError,
+                    ValueError) as error:
+                log(f'{type(error).__name__}: {error}')
+                if attempt == 2:
+                    self.defer(f'Repeated network/response failure: {error}')
+            if self.clock() + 30 + HTTP_TIMEOUT_SECONDS >= self.deadline:
+                raise Deferred('Insufficient time for another request')
+            log('Transient failure; wait 30 seconds for one retry')
+            self.sleep(30)
+        raise AssertionError('unreachable')
+
+
+def batch_specs():
+    return [(f'{gi}-{bi}', group, bi, list(batch))
+            for gi, (group, keywords) in enumerate(KEYWORD_GROUPS.items(), 1)
+            for bi, batch in enumerate(chunk_list(keywords, KEYWORDS_PER_QUERY), 1)]
+
+
+def begin_cycle(state, now, initial_days):
+    previous = parse_arxiv_datetime(state.get('last_complete_at'))
+    lower = now - timedelta(days=DAYS_BACK if previous else initial_days)
+    if previous:
+        lower = min(lower, previous - timedelta(days=DAYS_BACK))
+    state['pending'] = {'started_at': now.isoformat(), 'cutoff': lower.isoformat(),
+                        'config_hash': config_hash(), 'batches': {}}
+    atomic_json(STATE_PATH, state)
+
+
+def collect_batch(client, group, keywords, progress):
+    papers = {p['base_arxiv_id']: p for p in decode_papers(progress.get('papers', []))}
+    # Restart only the incomplete batch at page 1. Offsets from an older live
+    # lastUpdatedDate result set are not stable across runs.
+    seen_pages = set()
+    previous_oldest = None
+    for page in range(MAX_PAGES_PER_QUERY):
+        log(f'Fetching page {page + 1} for {group}')
+        feed = client.fetch(build_arxiv_url(build_search_query(keywords), page * PAGE_SIZE))
+        total = int(feed.feed.opensearch_totalresults)
+        if not feed.entries:
+            if page * PAGE_SIZE < total:
+                raise InvalidFeed('Unexpected empty page before totalResults')
+            progress.update(done=True, papers=encode_papers(list(papers.values())))
+            atomic_json(STATE_PATH, client.state)
+            return
+        signature = tuple(e.get('id') for e in feed.entries)
+        if signature in seen_pages:
+            raise InvalidFeed('Repeated API page; cannot certify coverage')
+        seen_pages.add(signature)
+        times = [parse_arxiv_datetime(e.updated) for e in feed.entries]
+        if any(t is None for t in times) or times != sorted(times, reverse=True):
+            raise InvalidFeed('API results are not sorted by lastUpdatedDate')
+        if previous_oldest and max(times) > previous_oldest:
+            raise InvalidFeed('Live pagination moved; restart this batch next run')
+        previous_oldest = min(times)
+        for entry in feed.entries:
+            paper = parse_entry(entry, group, keywords)
+            if paper:
+                key = paper['base_arxiv_id']
+                papers[key] = merge_paper(papers[key], paper) if key in papers else paper
+        progress['papers'] = encode_papers(list(papers.values()))
+        progress['done'] = (min(times) < get_cutoff_datetime()
+                            or page * PAGE_SIZE + len(feed.entries) >= total)
+        atomic_json(STATE_PATH, client.state)
+        if progress['done']:
+            return
+    raise Deferred('Page safety limit reached; incomplete, coverage checkpoint NOT advanced')
+
+
+def grouped_from_cycle(cycle):
+    grouped = {group: [] for group in KEYWORD_GROUPS}
+    for key, group, _, _ in batch_specs():
+        progress = cycle['batches'].get(key, {})
+        grouped[group].extend(decode_papers(progress.get('papers', [])))
+    return deduplicate_all_groups(grouped)
+
+
+def write_summary(status, body):
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    (OUTPUT_DIR / 'digest.txt').write_text(body, encoding='utf-8')
+    (OUTPUT_DIR / 'status.txt').write_text(status + '\n', encoding='utf-8')
+    summary = os.getenv('GITHUB_STEP_SUMMARY')
+    if summary:
+        with open(summary, 'a', encoding='utf-8') as f:
+            f.write(f'## arXiv digest — {status}\n\n')
+            f.write('完整诊断和日报预览见本次运行的 Artifacts。\n\n')
+            f.write(body[:1800] + '\n')
+
+
+def run(args):
+    global _CUTOFF, _CLIENT
+    state = load_state()
+    today = local_now().date().isoformat()
+    if args.scheduled and not state['pending'] and state.get('last_complete_day') == today:
+        log('Today already completed; no arXiv requests and no duplicate email')
+        write_summary('ALREADY_COMPLETE', '今天已完成日报，本次恢复检查无需请求 arXiv。')
+        return 0
+    if not args.dry_run and not args.diagnose:
+        validate_email_config()
+    _CLIENT = Client(state)
+    if args.diagnose:
+        # One normal first-batch request; respects stored cooldown, never sends email.
+        _, group, _, keywords = batch_specs()[0]
+        try:
+            _CLIENT.fetch(build_arxiv_url(build_search_query(keywords), 0))
+            write_summary('DIAGNOSTIC_OK', '诊断请求成功；此结果不代表完整检索已完成。')
+            return 0
+        except (Deferred, RuntimeError, InvalidFeed) as error:
+            write_summary('DIAGNOSTIC_FAILED', str(error))
+            return 2
+    if not state['pending']:
+        begin_cycle(state, utc_now(), args.initial_days)
+    cycle = state['pending']
+    if cycle['config_hash'] != config_hash():
+        # Preserve the uncovered time range, but recompute results under new settings.
+        cycle['batches'] = {}
+        cycle['config_hash'] = config_hash()
+        atomic_json(STATE_PATH, state)
+    _CUTOFF = parse_arxiv_datetime(cycle['cutoff'])
+    log(f'Fixed recovery cutoff {_CUTOFF.isoformat()}; '
+        f'{len(cycle["batches"])} batch checkpoints available')
+    reason = None
+    for key, group, number, keywords in batch_specs():
+        progress = cycle['batches'].setdefault(key, {'done': False, 'papers': []})
+        if progress['done']:
+            log(f'Reuse completed batch {key}; no HTTP request')
+            continue
+        try:
+            collect_batch(_CLIENT, group, keywords, progress)
+        except (Deferred, RuntimeError, InvalidFeed, ValueError, ET.ParseError) as error:
+            reason = str(error)
+            log(f'INCOMPLETE: {reason}')
+            break
+    incomplete = reason is not None
+    search_state = {'aborted': incomplete, 'failed_batches': []}
+    if incomplete:
+        for key, group, number, keywords in batch_specs():
+            if not cycle['batches'].get(key, {}).get('done'):
+                search_state['failed_batches'].append({'group': group,
+                    'batch_number': number, 'keywords': keywords, 'page_number': 1,
+                    'error': reason})
+    grouped = grouped_from_cycle(cycle)
+    body = format_digest(grouped, search_state)
+    body = body.replace(f'检索范围：最近 {DAYS_BACK} 天内首次发布或更新',
+                        f'检索范围：自 {_CUTOFF.strftime("%Y-%m-%d %H:%M UTC")} 起发布或更新（含故障补查）')
+    body = body.replace('在完整重试后仍因 API 限流或服务端故障失败。',
+                        '尚未完成，包含失败批次和因此暂未请求的批次。')
+    body = body.replace('为避免持续触发 429/503，程序已提前停止后续 API 请求。',
+                        '程序已保存进度，暂停后续请求，等待后续运行恢复。')
+    if incomplete:
+        body = f'本次未完成检索。原因为 {reason}\n\n' + body
+    total = sum(map(len, grouped.values()))
+    hits = sum(bool(papers) for papers in grouped.values())
+    status = 'INCOMPLETE' if incomplete else 'COMPLETE'
+    subject = f'arXiv Digest – {today} | {status} | {total} Papers | {hits} Groups'
+    if incomplete:
+        atomic_json(STATE_PATH, state)
+    write_summary(status, body)
+    if args.dry_run:
+        log('DRY RUN: no email, delivery checkpoint not advanced')
+        return 2 if incomplete else 0
+    if not incomplete or state.get('last_notice_day') != today:
+        send_email(subject, body)
+        if incomplete:
+            state['last_notice_day'] = today
+    if not incomplete:
+        # Never advance coverage on partial retrieval or before SMTP success.
+        state['last_complete_at'] = cycle['started_at']
+        state['last_complete_day'] = parse_arxiv_datetime(cycle['started_at']).astimezone(
+            LOCAL_TIMEZONE).date().isoformat()
+        state['pending'] = None
+        state['not_before'] = None
+    atomic_json(STATE_PATH, state)
+    log(f'{status}; {total} papers; { _CLIENT.requests } API requests')
+    return 2 if incomplete else 0
+
 
 def main():
-    print("🔍 正在抓取 arXiv 论文...")
-    print(
-        "UTC cutoff:",
-        get_cutoff_datetime().strftime(
-            "%Y-%m-%d %H:%M UTC"
-        ),
-    )
-
-    search_state = {
-        "failed_batches": [],
-        "aborted": False,
-    }
-
-    all_grouped = {}
-
-    for group_name, keywords in KEYWORD_GROUPS.items():
-        if search_state["aborted"]:
-            all_grouped[group_name] = []
-            continue
-
-        results = search_group(
-            group_name,
-            keywords,
-            search_state,
-        )
-
-        all_grouped[group_name] = results
-
-    deduplicated_groups = deduplicate_all_groups(
-        all_grouped
-    )
-
-    total_papers = sum(
-        len(papers)
-        for papers in deduplicated_groups.values()
-    )
-
-    groups_with_hits = sum(
-        1
-        for papers in deduplicated_groups.values()
-        if papers
-    )
-
-    email_body = format_digest(
-        deduplicated_groups,
-        search_state,
-    )
-
-    today_string = local_now().strftime("%Y-%m-%d")
-
-    if search_state["failed_batches"]:
-        subject_prefix = "⚠️ arXiv Digest"
-        completeness_text = "INCOMPLETE | "
-    else:
-        subject_prefix = "📬 arXiv Digest"
-        completeness_text = ""
-
-    subject = (
-        f"{subject_prefix} – {today_string} | "
-        f"{completeness_text}"
-        f"{total_papers} Papers | "
-        f"{groups_with_hits} Groups"
-    )
-
-    print("\n========== DIGEST PREVIEW ==========")
-    print(email_body)
-    print("====================================\n")
-
-    send_email(
-        subject,
-        email_body,
-    )
-
-    # 只要邮件成功发出，就让 GitHub Action 正常结束。
-    # 如果 arXiv API 不完整，邮件主题和正文都会明确标记 INCOMPLETE，
-    # 避免出现“红色失败但你不知道发生了什么”的情况。
-    if search_state["failed_batches"]:
-        print(
-            "⚠️ Digest sent with incomplete-search warning."
-        )
-    else:
-        print(
-            "✅ Digest completed successfully."
-        )
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--dry-run', action='store_true', help='Fetch/preview only; do not send email')
+    parser.add_argument('--diagnose', action='store_true', help='One normal query; never sends email')
+    parser.add_argument('--scheduled', action='store_true', help='Skip when today already completed')
+    parser.add_argument('--initial-days', type=int, default=7,
+                        help='First installation backfill; later runs use durable coverage')
+    args = parser.parse_args()
+    if args.initial_days < DAYS_BACK:
+        parser.error('--initial-days must be at least 2')
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(line_buffering=True)
+    try:
+        return run(args)
+    except Exception as error:
+        log(f'ERROR {type(error).__name__}: {error}')
+        write_summary('ERROR', f'{type(error).__name__}: {error}')
+        return 1
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    sys.exit(main())
