@@ -57,6 +57,7 @@ class RecoveryTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         p = Path(self.temp.name)
         for name, value in [('STATE_PATH', p / 'state.json'),
+                            ('SOURCE', 'api'),
                             ('OUTPUT_DIR', p / 'output'), ('_CUTOFF', None)]:
             ctx = patch.object(d, name, value)
             ctx.start()
@@ -252,4 +253,3 @@ class RecoveryTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

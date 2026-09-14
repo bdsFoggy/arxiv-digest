@@ -19,6 +19,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
+from types import SimpleNamespace
 
 import feedparser
 
@@ -38,6 +39,18 @@ RUN_BUDGET_SECONDS = 600
 STATE_PATH = Path(os.getenv("DIGEST_STATE_PATH", "digest-state.json"))
 OUTPUT_DIR = Path(os.getenv("DIGEST_OUTPUT_DIR", "run-output"))
 BASE_URL = "https://export.arxiv.org/api/query?"
+SOURCE = 'oai'
+OAI_URL = 'https://oaipmh.arxiv.org/oai?'
+OAI_NS = '{http://www.openarchives.org/OAI/2.0/}'
+RAW_NS = '{http://arxiv.org/OAI/arXivRaw/}'
+OAI_SETS = {
+    'physics.optics': 'physics:physics:optics',
+    'quant-ph': 'physics:quant-ph',
+    'physics.app-ph': 'physics:physics:app-ph',
+    'eess.SP': 'eess:eess:SP',
+    'cs.CV': 'cs:cs:CV',
+    'cs.LG': 'cs:cs:LG',
+}
 USER_AGENT = "PhotonicsArxivDigest/3.0 (mailto:foggymature@gmail.com)"
 _CUTOFF = None
 _CLIENT = None
@@ -244,7 +257,12 @@ def normalize_text(text):
 
 
 def keyword_matched(text, keyword):
-    return normalize_text(keyword) in normalize_text(text)
+    text, keyword = normalize_text(text), normalize_text(keyword)
+    # Chemical abbreviations must not match "using", "since", "signal", etc.
+    # Preserve the existing phrase/plural matching for descriptive keywords.
+    if keyword in {'sin', 'aln', 'tfln', 'lnoi', 'linbo3', 'ppln', 'bto', 'tflt', 'spdc'}:
+        return re.search(r'(?<!\w)' + re.escape(keyword) + r'(?!\w)', text) is not None
+    return keyword in text
 
 
 def chunk_list(items, chunk_size):
@@ -284,7 +302,7 @@ def get_arxiv_id(entry):
     返回带版本号的 arXiv ID，例如 2605.14777v2。
     """
     entry_id = getattr(entry, "id", "")
-    return entry_id.rstrip("/").rsplit("/", 1)[-1]
+    return entry_id.rstrip("/").split('/abs/')[-1]
 
 
 def get_base_arxiv_id(entry):
@@ -794,7 +812,7 @@ def decode_papers(papers):
 
 
 def config_hash():
-    value = [KEYWORD_GROUPS, CATEGORIES, STRICT_CATEGORY_MODE, KEYWORDS_PER_QUERY]
+    value = [2, SOURCE, KEYWORD_GROUPS, CATEGORIES, STRICT_CATEGORY_MODE, KEYWORDS_PER_QUERY]
     return hashlib.sha256(json.dumps(value).encode()).hexdigest()
 
 
@@ -891,7 +909,7 @@ class Client:
         log(f'Retry-After={record["headers"].get("retry-after", "absent")}; '
             f'X-Cache={record["headers"].get("x-cache", "absent")}')
 
-    def fetch(self, url):
+    def fetch(self, url, validator=validate_feed):
         # Only 5xx / transport / invalid XML get one short retry.
         # A 429/403 opens one GLOBAL circuit immediately. No endpoint/IP switching.
         for attempt in (1, 2):
@@ -900,13 +918,13 @@ class Client:
             log(f'API request {self.requests}, attempt {attempt}/2')
             try:
                 request = Request(url, headers={'User-Agent': USER_AGENT,
-                                               'Accept': 'application/atom+xml'})
+                                               'Accept': 'application/atom+xml, application/xml'})
                 with self.opener(request, timeout=HTTP_TIMEOUT_SECONDS) as response:
                     payload = response.read(MAX_RESPONSE_BYTES + 1)
                     if len(payload) > MAX_RESPONSE_BYTES:
                         raise InvalidFeed('Response too large')
                     headers = dict(response.headers)
-                feed = validate_feed(payload)
+                feed = validator(payload)
                 log(f'HTTP 200, entries={len(feed.entries)}, '
                     f'elapsed={self.clock() - start:.1f}s')
                 self.state['not_before'] = None
@@ -940,7 +958,130 @@ class Client:
         raise AssertionError('unreachable')
 
 
+class BadResumptionToken(RuntimeError):
+    pass
+
+
+def build_oai_url(category, lower, upper, token=None):
+    # A token replaces all selection arguments, as required by OAI-PMH.
+    params = {'verb': 'ListRecords'}
+    if token:
+        params['resumptionToken'] = token
+    else:
+        params.update(metadataPrefix='arXivRaw', set=OAI_SETS[category],
+                      **{'from': lower, 'until': upper})
+    return OAI_URL + urlencode(params)
+
+
+def validate_oai(payload):
+    root = ET.fromstring(payload)
+    if root.tag != OAI_NS + 'OAI-PMH':
+        raise InvalidFeed('Response is not OAI-PMH XML')
+    response_date = parse_arxiv_datetime(root.findtext(OAI_NS + 'responseDate'))
+    if response_date is None:
+        raise InvalidFeed('Missing OAI responseDate')
+    errors = root.findall(OAI_NS + 'error')
+    records = root.find(OAI_NS + 'ListRecords')
+    if errors:
+        if len(errors) == 1 and errors[0].get('code') == 'noRecordsMatch' and records is None:
+            return SimpleNamespace(entries=[], token=None, expiration=None)
+        if any(e.get('code') == 'badResumptionToken' for e in errors):
+            raise BadResumptionToken('OAI continuation token expired')
+        raise InvalidFeed('OAI error: ' + '; '.join(
+            f'{e.get("code")}: {e.text}' for e in errors))
+    if records is None:
+        raise InvalidFeed('Missing OAI ListRecords; cannot certify coverage')
+    rows = records.findall(OAI_NS + 'record')
+    if not rows:
+        raise InvalidFeed('Empty ListRecords without noRecordsMatch')
+    entries = []
+    for row in rows:
+        header = row.find(OAI_NS + 'header')
+        if header is None or not header.findtext(OAI_NS + 'identifier'):
+            raise InvalidFeed('OAI record has no identifier')
+        if header.get('status') == 'deleted':
+            continue
+        raw = row.find(OAI_NS + 'metadata/' + RAW_NS + 'arXivRaw')
+        if raw is None:
+            raise InvalidFeed('Missing arXivRaw metadata')
+        values = {key: (raw.findtext(RAW_NS + key) or '').strip()
+                  for key in ('id', 'title', 'abstract', 'authors', 'categories')}
+        if not all(values.values()):
+            raise InvalidFeed('Incomplete arXivRaw metadata')
+        versions = {}
+        for version in raw.findall(RAW_NS + 'version'):
+            name = version.get('version', '')
+            if not re.fullmatch(r'v[1-9]\d*', name):
+                raise InvalidFeed('Invalid arXiv version number')
+            number = int(name[1:])
+            date = parsedate_to_datetime(version.findtext(RAW_NS + 'date') or '')
+            if date.tzinfo is None or number in versions:
+                raise InvalidFeed('Invalid or duplicate arXiv version timestamp')
+            versions[number] = date.astimezone(timezone.utc)
+        if 1 not in versions:
+            raise InvalidFeed('Missing first submission date')
+        latest = max(versions)
+        # OAI header.datestamp tracks metadata edits, not paper versions.
+        # Using it would incorrectly report bibliography edits as new papers.
+        entries.append(SimpleNamespace(
+            id=f'https://arxiv.org/abs/{values["id"]}v{latest}',
+            title=values['title'], summary=values['abstract'],
+            authors=[SimpleNamespace(name=values['authors'])],
+            tags=[{'term': c} for c in values['categories'].split()],
+            published=versions[1].isoformat(), updated=versions[latest].isoformat()))
+    token = records.find(OAI_NS + 'resumptionToken')
+    return SimpleNamespace(entries=entries,
+                           token=(token.text or '').strip() or None if token is not None else None,
+                           expiration=token.get('expirationDate') if token is not None else None)
+
+
+def collect_oai(client, category, progress):
+    cycle = client.state['pending']
+    lower = parse_arxiv_datetime(cycle['cutoff']).date().isoformat()
+    upper = cycle.setdefault('oai_until', client.now().date().isoformat())
+    token = progress.get('token')
+    expiration = parse_arxiv_datetime(progress.get('expiration'))
+    if token and (progress.get('token_day') != client.now().date().isoformat()
+                  or (expiration and expiration <= client.now())):
+        log(f'OAI token expired for {category}; restart the same date range')
+        progress.clear()
+        progress.update(done=False, papers=[])
+        token = None
+    papers = {p['base_arxiv_id']: p for p in decode_papers(progress.get('papers', []))}
+    seen_tokens = {token} if token else set()
+    for page in range(MAX_PAGES_PER_QUERY):
+        log(f'OAI {category}, {lower} through {upper}, page {page + 1}')
+        try:
+            feed = client.fetch(build_oai_url(category, lower, upper, token), validate_oai)
+        except BadResumptionToken as error:
+            progress.clear()
+            progress.update(done=False, papers=[])
+            atomic_json(STATE_PATH, client.state)
+            raise Deferred('OAI token rejected; saved range will restart next run') from error
+        if feed.token and feed.token in seen_tokens:
+            raise InvalidFeed('Repeated OAI token; cannot certify coverage')
+        for entry in feed.entries:
+            for group, keywords in KEYWORD_GROUPS.items():
+                paper = parse_entry(entry, group, keywords)
+                if paper:
+                    key = paper['base_arxiv_id']
+                    papers[key] = merge_paper(papers[key], paper) if key in papers else paper
+        token = feed.token
+        if token:
+            seen_tokens.add(token)
+        progress.update(papers=encode_papers(list(papers.values())), done=not token,
+                        token=token, expiration=feed.expiration,
+                        token_day=client.now().date().isoformat())
+        atomic_json(STATE_PATH, client.state)
+        if not token:
+            return
+    raise Deferred('OAI page budget reached; saved continuation will resume next run')
+
+
 def batch_specs():
+    if SOURCE == 'oai':
+        return [(category, category, i, [])
+                for i, category in enumerate(CATEGORIES, 1)]
     return [(f'{gi}-{bi}', group, bi, list(batch))
             for gi, (group, keywords) in enumerate(KEYWORD_GROUPS.items(), 1)
             for bi, batch in enumerate(chunk_list(keywords, KEYWORDS_PER_QUERY), 1)]
@@ -957,6 +1098,8 @@ def begin_cycle(state, now, initial_days):
 
 
 def collect_batch(client, group, keywords, progress):
+    if SOURCE == 'oai':
+        return collect_oai(client, group, progress)
     papers = {p['base_arxiv_id']: p for p in decode_papers(progress.get('papers', []))}
     # Restart only the incomplete batch at page 1. Offsets from an older live
     # lastUpdatedDate result set are not stable across runs.
@@ -1000,7 +1143,8 @@ def grouped_from_cycle(cycle):
     grouped = {group: [] for group in KEYWORD_GROUPS}
     for key, group, _, _ in batch_specs():
         progress = cycle['batches'].get(key, {})
-        grouped[group].extend(decode_papers(progress.get('papers', [])))
+        for paper in decode_papers(progress.get('papers', [])):
+            grouped[paper['groups'][0] if SOURCE == 'oai' else group].append(paper)
     return deduplicate_all_groups(grouped)
 
 
@@ -1031,7 +1175,12 @@ def run(args):
         # One normal first-batch request; respects stored cooldown, never sends email.
         _, group, _, keywords = batch_specs()[0]
         try:
-            _CLIENT.fetch(build_arxiv_url(build_search_query(keywords), 0))
+            if SOURCE == 'oai':
+                now = utc_now()
+                _CLIENT.fetch(build_oai_url(group, (now - timedelta(days=DAYS_BACK)).date().isoformat(),
+                                            now.date().isoformat()), validate_oai)
+            else:
+                _CLIENT.fetch(build_arxiv_url(build_search_query(keywords), 0))
             write_summary('DIAGNOSTIC_OK', '诊断请求成功；此结果不代表完整检索已完成。')
             return 0
         except (Deferred, RuntimeError, InvalidFeed) as error:
@@ -1070,6 +1219,10 @@ def run(args):
                     'error': reason})
     grouped = grouped_from_cycle(cycle)
     body = format_digest(grouped, search_state)
+    if SOURCE == 'oai':
+        body = body.replace('排序依据：arXiv lastUpdatedDate',
+                            '数据来源：arXiv OAI-PMH；按论文版本提交时间排序，关键词在本地匹配')
+        body = body.replace('个关键词批次', '个学科批次')
     body = body.replace(f'检索范围：最近 {DAYS_BACK} 天内首次发布或更新',
                         f'检索范围：自 {_CUTOFF.strftime("%Y-%m-%d %H:%M UTC")} 起发布或更新（含故障补查）')
     body = body.replace('在完整重试后仍因 API 限流或服务端故障失败。',
@@ -1105,13 +1258,17 @@ def run(args):
 
 
 def main():
+    global SOURCE
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--dry-run', action='store_true', help='Fetch/preview only; do not send email')
     parser.add_argument('--diagnose', action='store_true', help='One normal query; never sends email')
     parser.add_argument('--scheduled', action='store_true', help='Skip when today already completed')
     parser.add_argument('--initial-days', type=int, default=7,
                         help='First installation backfill; later runs use durable coverage')
+    parser.add_argument('--source', choices=('oai', 'api'), default='oai',
+                        help='Official OAI metadata by default; api is the legacy search service')
     args = parser.parse_args()
+    SOURCE = args.source
     if args.initial_days < DAYS_BACK:
         parser.error('--initial-days must be at least 2')
     if hasattr(sys.stdout, 'reconfigure'):

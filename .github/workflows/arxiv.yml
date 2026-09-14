@@ -1,6 +1,14 @@
 name: Arxiv Daily Digest
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'arxiv_daily_digest_simple.py'
+      - 'state_store.py'
+      - 'requirements.txt'
+      - 'tests/**'
+      - '.github/workflows/arxiv.yml'
   schedule:
     # Singapore time 08:07; later slots only recover incomplete work.
     - cron: '7 0 * * *'
@@ -10,11 +18,12 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'resume = normal digest; diagnose = query only, no email'
+        description: 'resume = send digest; preview = full fetch, no email; diagnose = one OAI page'
         type: choice
         default: resume
         options:
           - resume
+          - preview
           - diagnose
 
 permissions:
@@ -42,6 +51,8 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
+      - name: Test recovery and OAI metadata handling
+        run: python -m unittest discover -s tests -v
       - name: Restore recovery checkpoint
         id: restore
         env:
@@ -60,6 +71,8 @@ jobs:
         run: |
           if [ "$RUN_MODE" = "diagnose" ]; then
             python -u arxiv_daily_digest_simple.py --diagnose
+          elif [ "$RUN_MODE" = "preview" ] || [ "$RUN_EVENT" = "push" ]; then
+            python -u arxiv_daily_digest_simple.py --dry-run
           elif [ "$RUN_EVENT" = "schedule" ]; then
             python -u arxiv_daily_digest_simple.py --scheduled
           else
