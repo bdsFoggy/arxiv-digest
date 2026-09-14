@@ -157,6 +157,23 @@ class RecoveryTests(unittest.TestCase):
         d.begin_cycle(state, NOW, 7)
         self.assertEqual(state['pending']['cutoff'], '2026-09-03T00:00:00+00:00')
 
+    def test_recent_success_uses_exactly_two_days(self):
+        for hours in (1, 24, 30, 48):
+            with self.subTest(hours=hours):
+                state = d.load_state()
+                state['last_complete_at'] = (NOW - timedelta(hours=hours)).isoformat()
+                d.begin_cycle(state, NOW, 7)
+                self.assertEqual(d.parse_arxiv_datetime(state['pending']['cutoff']),
+                                 NOW - timedelta(days=2))
+
+    def test_unfinished_cycle_keeps_original_backfill_window(self):
+        state = d.load_state()
+        d.begin_cycle(state, NOW - timedelta(days=4), 7)
+        cutoff = state['pending']['cutoff']
+        with patch.object(d.Client, 'fetch', side_effect=d.Deferred('Still unavailable')):
+            self.assertEqual(d.run(self.args(dry_run=True)), 2)
+        self.assertEqual(d.load_state()['pending']['cutoff'], cutoff)
+
     def test_old_paper_new_version_is_preserved(self):
         d._CUTOFF = NOW - timedelta(days=2)
         feed = d.validate_feed(atom(entry(id='2501.00001v3', published='2025-01-01T00:00:00Z'), 1))

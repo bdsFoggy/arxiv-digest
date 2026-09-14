@@ -1090,8 +1090,10 @@ def batch_specs():
 def begin_cycle(state, now, initial_days):
     previous = parse_arxiv_datetime(state.get('last_complete_at'))
     lower = now - timedelta(days=DAYS_BACK if previous else initial_days)
-    if previous:
-        lower = min(lower, previous - timedelta(days=DAYS_BACK))
+    # Routine daily runs use exactly the rolling 48-hour window. Only a
+    # success older than that window needs a wider outage backfill.
+    if previous and previous < lower:
+        lower = previous - timedelta(days=DAYS_BACK)
     state['pending'] = {'started_at': now.isoformat(), 'cutoff': lower.isoformat(),
                         'config_hash': config_hash(), 'batches': {}}
     atomic_json(STATE_PATH, state)

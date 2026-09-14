@@ -71,8 +71,10 @@ jobs:
         run: |
           if [ "$RUN_MODE" = "diagnose" ]; then
             python -u arxiv_daily_digest_simple.py --diagnose
-          elif [ "$RUN_MODE" = "preview" ] || [ "$RUN_EVENT" = "push" ]; then
+          elif [ "$RUN_MODE" = "preview" ]; then
             python -u arxiv_daily_digest_simple.py --dry-run
+          elif [ "$RUN_EVENT" = "push" ]; then
+            python -u arxiv_daily_digest_simple.py --dry-run --scheduled
           elif [ "$RUN_EVENT" = "schedule" ]; then
             python -u arxiv_daily_digest_simple.py --scheduled
           else
