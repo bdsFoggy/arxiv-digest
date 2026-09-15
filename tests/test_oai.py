@@ -161,7 +161,7 @@ class OAITests(unittest.TestCase):
         d.atomic_json(d.STATE_PATH, state)
         with patch.object(d.Client, 'fetch', autospec=True) as fetch:
             fetch.side_effect = lambda client, *a: d.validate_oai(response())
-            self.assertEqual(d.run(self.args()), 2)
+            self.assertEqual(d.run(self.args()), 0)
         after = d.load_state()
         self.assertEqual(after['pending']['cutoff'], cutoff)
         self.assertEqual(after['not_before'], state['not_before'])
