@@ -1,6 +1,338 @@
 {
   "schema": 1,
-  "pending": null,
+  "pending": {
+    "started_at": "2026-09-15T01:57:50.579295+00:00",
+    "cutoff": "2026-09-13T01:57:50.579295+00:00",
+    "config_hash": "23110c5f4cfec1ab7935a4d1879e50e3091cfc6bea4f67a97c464fe4575dfdae",
+    "batches": {
+      "physics.optics": {
+        "done": true,
+        "papers": [
+          {
+            "title": "Robust biexciton preparation for entangled photon-pair generation by single-shot Floquet driving",
+            "authors": "Jun-Yong Yan, Paul C. A. Hagen, Hang-Yu Ge, Fang-Yuan Li, Hans-Georg Babin, Wei E.I. Sha, Andreas D. Wieck, Arne Ludwig, Chao-Yuan Jin, Vollrath M. Axt, Da-Wei Wang, Moritz Cygorek, Feng Liu",
+            "summary": "Quantum emitters driven by resonant two-photon excitation are a leading source for deterministically generated entangled photon pairs, essential for scalable photonic quantum technologies. However, conventional excitation schemes pose various constraints, limiting their scalability and practicability. Here, we demonstrate how biexciton preparation schemes with significantly improved robustness and reduced experimental demands can be identified using a novel design principle: ultrafast single-shot Floquet driving. This is achieved by employing two strongly and symmetrically detuned dichromatic pulses, whose superposition generates a stroboscopic Hamiltonian that enables direct coupling between ground and biexciton states. Moreover, a pulse delay serves as a tuning knob, introducing an effective magnetic field making biexciton preparation particularly robust. Experimentally, we achieve a biexciton occupation exceeding 96% and preserve photon-pair entanglement with a fidelity of 93.4%. Our work opens avenues for designing a class of quantum control protocols with superior performance across diverse quantum emitters and qubit platforms.",
+            "link": "https://arxiv.org/abs/2504.02753",
+            "arxiv_id": "2504.02753v5",
+            "base_arxiv_id": "2504.02753",
+            "version": 5,
+            "published_datetime": "2025-04-03T16:45:33+00:00",
+            "updated_datetime": "2026-09-13T11:08:50+00:00",
+            "published": "2025-04-03 16:45 UTC",
+            "updated": "2026-09-13 11:08 UTC",
+            "status": "重要版本更新",
+            "keywords": [
+              "photon pair",
+              "photon-pair",
+              "entangled photon",
+              "entangled-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph",
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Volumetric Optical Scattering Neural Networks",
+            "authors": "Xuhao Luo, Qiang Song, Weiwei Cai, Lei Chen, Enbo Yang, Hao Wang, Zhipei Sun, Yueqiang Hu, Joel K.W. Yang and Huigao Duan",
+            "summary": "Optical neural networks rely on planar photonic circuits or spatially separated diffractive planes, limiting volumetric integration and requiring precise alignment. Here we propose a volumetric optical scattering neural network (OSNN) comprising densely packed refractive-index neurons with weak contrast $\\Delta n = 0.006$. Direction-dependent first-order Born scattering provides local coupling, while ordered propagation accumulates these weak updates into global task-specific transformations. Fabrication-aware training and two-photon nanolithography produced a sub-$4 \\times 10^{-4}$ mm$^3$ device containing 376,320 neurons at $1.0 \\times 10^9$/mm$^3$ in a continuously written, intrinsically registered volume. Experimentally, a classifier performed class-selective energy routing with 95.8% blind-test accuracy on MNIST. The calculated passive optical transit time is below 1 ps. A separately optimized imager provided fourfold full-field spatial-sampling compression, resolved 1-$\\mu$m features and enabled cross-domain transfer. An OSNN co-designed for multiple tasks encoded single-cell fluorescence-derived images into measured output maps, which were pooled into a 16-dimensional representation supporting organelle classification, morphology reconstruction, doublet detection and morphology regression, with all reported metrics exceeding 0.92. Volumetric weak scattering thus establishes an ultracompact, intrinsically registered optical computing architecture, opening a new route to scalable machine vision and biomedical analysis.",
+            "link": "https://arxiv.org/abs/2605.13177",
+            "arxiv_id": "2605.13177v2",
+            "base_arxiv_id": "2605.13177",
+            "version": 2,
+            "published_datetime": "2026-05-13T08:38:54+00:00",
+            "updated_datetime": "2026-09-13T14:03:20+00:00",
+            "published": "2026-05-13 08:38 UTC",
+            "updated": "2026-09-13 14:03 UTC",
+            "status": "重要版本更新",
+            "keywords": [
+              "optical computing"
+            ],
+            "groups": [
+              "Multimodal Imaging & Photonic Computing"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Mie Optical Computing",
+            "authors": "Vsevolod Kleshchenko, Vladimir Igoshin, Costantino De Angelis, and Mihail Petrov",
+            "summary": "Optical computing is emerging as a promising paradigm for next-generation information processing. Diffractive optical processors rely on spatially distributed trainable degrees of freedom, leading to extended architectures. Here, we propose a compact neuromorphic optical-computing approach where the entire trainable transformation is implemented by a single Mie scatterer. By formulating computation in vector spherical harmonics basis, trainable modal couplings can be concentrated within a finite object through its T-matrix. Since available T-matrix parameters scale as the fourth power of maximal multipole order, this architecture can overcome trainable-parameter-density limitations of conventional spatially distributed diffractive processors. We demonstrate classification of phase-encoded MNIST images using scattered-field intensity. At a particle size parameter of $ka = 15$, the trained T-matrix reaches approximately 90% test accuracy, comparable to a single-layer artificial neural network. Similar performance can be achieved using near-fields, enabling on-chip integration. We show how reciprocity, passivity, and particle symmetry constrain performance: passivity reduces the accessible operator space while improving robustness, whereas symmetry reduces the number of independent parameters. Finally, we inverse-design a non-absorbing dielectric scatterer that realizes the classification task with 84% accuracy. These results demonstrate that nontrivial neuromorphic transformations can be encoded within the multipolar response of a single compact scatterer.",
+            "link": "https://arxiv.org/abs/2608.21891",
+            "arxiv_id": "2608.21891v2",
+            "base_arxiv_id": "2608.21891",
+            "version": 2,
+            "published_datetime": "2026-08-22T10:07:42+00:00",
+            "updated_datetime": "2026-09-14T08:03:32+00:00",
+            "published": "2026-08-22 10:07 UTC",
+            "updated": "2026-09-14 08:03 UTC",
+            "status": "重要版本更新",
+            "keywords": [
+              "optical computing"
+            ],
+            "groups": [
+              "Multimodal Imaging & Photonic Computing"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Sub-kHz linewidth integrated extended-DBR Pockels lasers using lithium tantalate",
+            "authors": "Hugo Larocque, Zhuoya Yuan, Zihan Li, Giovanni Scarioni, Annika Schoels, Jiale Sun, Anat Siddharth, Xin Ou, Simone Bianconi, Tobias J. Kippenberg",
+            "summary": "Tunable low-noise lasers are crucial components employed in modern metrology. Advances in photonic integrated circuit technology have provided a new platform for compact integrated lasers with large output powers, frequency-agile tuning, and narrow linewidths. For instance, lithium niobate extended-DBR lasers can yield output powers in the tens of mW, GHz-level tuning ranges, and tuning rates in the hundreds of MHz. However, noise levels achievable in other integrated laser designs remain challenging to reach. Here, we address this challenge by implementing extended-DBR lasers in lithium tantalate, thereby achieving intrinsic linewidths as low as 24 Hz, output powers of 10 mW, with tuning features on par with those of lithium niobate. The extended-DBR laser is assembled with modern packaging solutions to improve its robustness and demonstrate long-term stability with a free-running frequency drift within a range of 232 MHz over 19 hours. These benefits, in conjunction with lithium tantalate's suitability for volume manufacturing, promise to considerably expand accessibility to a new generation of widely tunable and low-noise integrated lasers.",
+            "link": "https://arxiv.org/abs/2609.14777",
+            "arxiv_id": "2609.14777v1",
+            "base_arxiv_id": "2609.14777",
+            "version": 1,
+            "published_datetime": "2026-09-13T20:35:34+00:00",
+            "updated_datetime": "2026-09-13T20:35:34+00:00",
+            "published": "2026-09-13 20:35 UTC",
+            "updated": "2026-09-13 20:35 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "lithium niobate",
+              "lithium tantalate"
+            ],
+            "groups": [
+              "Integrated Photonic Materials"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "High-efficiency integrated laser on erbium-doped lithium niobate-on-insulator",
+            "authors": "Chunyu Zhang, Yuqi Zhang, Yiyang Zou, Xiaomin Wang, Binwen Niu, Cangsu Yuan, Tongxin Xue, Chunlin Zhu, Hongde Liu, Dahuai Zheng, Shiguo Liu, Fang Bo, Yongfa Kong and Jingjun Xu",
+            "summary": "Lithium niobate on insulator (LNOI) combines the outstanding optical properties of lithium niobate (LN) with strong optical confinement, scalable fabrication and high-density integration, making it a leading platform for integrated photonic chips. Recent advances in LNOI photonics have mainly centred on passive and electro-optic components, including couplers, waveguides, microcavities and modulators, whereas efficient on-chip laser sources remain insufficiently developed, limiting the realization of fully integrated LN photonic systems. Because LN is an indirect-bandgap material, lasing on LNOI generally relies on photoluminescence from rare-earth-ion doping, yet the conversion efficiency of doped LNOI lasers has remained low. By comparing LNOI microcavity lasers with fibre lasers and waveguide amplifiers, we identify the limited number of rare-earth ions participating in stimulated emission as a key factor responsible for inefficient pump utilization. Here we demonstrate an integrated Er-doped LNOI laser that combines high-quality, highly Er-doped LN, a large-diameter wide-microring resonator, a low-loss waveguide amplifier and bidirectional pumping. This architecture enables a slope efficiency of 16.91% at 1562 nm, exceeding 10% on the LNOI platform for the first time. Our results provide a route towards high-efficiency LNOI lasers for fully integrated photonic systems.",
+            "link": "https://arxiv.org/abs/2609.15304",
+            "arxiv_id": "2609.15304v1",
+            "base_arxiv_id": "2609.15304",
+            "version": 1,
+            "published_datetime": "2026-09-14T09:53:43+00:00",
+            "updated_datetime": "2026-09-14T09:53:43+00:00",
+            "published": "2026-09-14 09:53 UTC",
+            "updated": "2026-09-14 09:53 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "electro-optic",
+              "lithium niobate",
+              "LNOI",
+              "microring",
+              "ring resonator"
+            ],
+            "groups": [
+              "Integrated Photonic Materials",
+              "Microresonators & Integrated Quantum Systems",
+              "Nonlinear & Electro-Optic Devices"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Micro-transfer Printed Blue InGaN Lasers on Silicon Nitride Photonic Integrated Circuits",
+            "authors": "Konstantinos Akritidis, Krzysztof Gibasiewicz, Han Wang, Iryna Levchenko, Max Kiewiet, Maximilien Billet, Miko{\\l}aj Chlipa{\\l}a, Karolina Peret-Malessa, Pol Van Dorpe, Henryk Turski, and Bart Kuyken",
+            "summary": "Expanding integrated photonics into the blue spectral range requires high-performance light sources, making the gallium nitride (GaN) material family indispensable. While silicon nitride (SiN) platforms offer a robust, CMOS compatible passive ecosystem for visible wavelengths, seamlessly integrating GaN lasers remains a major bottleneck. Conventional heterogeneous integration methods present distinct trade-offs: full-wafer bonding achieves high throughput but requires careful management of thermal and lattice mismatches across large areas, whereas flip-chip bonding ensures high yield through pretesting but is constrained by sequential processing speed. In this landscape, micro-transfer printing (MTP) emerges as a disruptive, material-efficient alternative, bypassing these limitations by combining high-density parallel integration with known-good-die selection. Applying MTP to GaN, however, presents a significant material challenge: due to its chemical inertness and strong III-N bonds, device release typically relies on electrochemical etching, which can compromise material quality. Here, we overcome this hurdle and demonstrate the first micro-transfer printed blue lasers on a SiN platform. Using a heavily doped n-type sacrificial layer together with optimized electrochemical etching conditions, we release smooth-surfaced thin-film light sources from bulk GaN substrates. Following release, the devices are integrated and butt-coupled to SiN fork-shaped edge couplers, achieving high current densities exceeding 20 kA$/$cm$^2$ alongside lasing at 455 nm. These results expand the visible integrated photonic toolkit and establish a framework for multi-wavelength integration, opening new avenues for next-generation technologies including flow cytometry, quantum computing, optical communications, and augmented/virtual reality.",
+            "link": "https://arxiv.org/abs/2609.15390",
+            "arxiv_id": "2609.15390v1",
+            "base_arxiv_id": "2609.15390",
+            "version": 1,
+            "published_datetime": "2026-09-14T11:18:11+00:00",
+            "updated_datetime": "2026-09-14T11:18:11+00:00",
+            "published": "2026-09-14 11:18 UTC",
+            "updated": "2026-09-14 11:18 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "edge coupler",
+              "heterogeneous integration",
+              "silicon nitride",
+              "SiN"
+            ],
+            "groups": [
+              "Integrated Photonic Materials",
+              "Modes, Couplers & Interfaces"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          }
+        ],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-15"
+      },
+      "quant-ph": {
+        "done": true,
+        "papers": [
+          {
+            "title": "Robust biexciton preparation for entangled photon-pair generation by single-shot Floquet driving",
+            "authors": "Jun-Yong Yan, Paul C. A. Hagen, Hang-Yu Ge, Fang-Yuan Li, Hans-Georg Babin, Wei E.I. Sha, Andreas D. Wieck, Arne Ludwig, Chao-Yuan Jin, Vollrath M. Axt, Da-Wei Wang, Moritz Cygorek, Feng Liu",
+            "summary": "Quantum emitters driven by resonant two-photon excitation are a leading source for deterministically generated entangled photon pairs, essential for scalable photonic quantum technologies. However, conventional excitation schemes pose various constraints, limiting their scalability and practicability. Here, we demonstrate how biexciton preparation schemes with significantly improved robustness and reduced experimental demands can be identified using a novel design principle: ultrafast single-shot Floquet driving. This is achieved by employing two strongly and symmetrically detuned dichromatic pulses, whose superposition generates a stroboscopic Hamiltonian that enables direct coupling between ground and biexciton states. Moreover, a pulse delay serves as a tuning knob, introducing an effective magnetic field making biexciton preparation particularly robust. Experimentally, we achieve a biexciton occupation exceeding 96% and preserve photon-pair entanglement with a fidelity of 93.4%. Our work opens avenues for designing a class of quantum control protocols with superior performance across diverse quantum emitters and qubit platforms.",
+            "link": "https://arxiv.org/abs/2504.02753",
+            "arxiv_id": "2504.02753v5",
+            "base_arxiv_id": "2504.02753",
+            "version": 5,
+            "published_datetime": "2025-04-03T16:45:33+00:00",
+            "updated_datetime": "2026-09-13T11:08:50+00:00",
+            "published": "2025-04-03 16:45 UTC",
+            "updated": "2026-09-13 11:08 UTC",
+            "status": "重要版本更新",
+            "keywords": [
+              "photon pair",
+              "photon-pair",
+              "entangled photon",
+              "entangled-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph",
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Dynamic stimulated emission for deterministic addition and subtraction of propagating photons",
+            "authors": "Haoyuan Luo, Parth S. Shah, Frank Yang, Mohammad Mirhosseini, Sahand Mahmoodian",
+            "summary": "Photon subtraction and addition are essential non-Gaussian processes in quantum optics, where conventional methods using linear optics and number-resolving detection often suffer from low success probability. Here, we introduce the concept of \\textit{dynamic stimulated emission}, whereby a quantum emitter undergoes stimulated emission with a time-dependent coupling. Despite interacting with a multimode photon field, we show that, for both two- and three-level emitters, their dynamics can mimic that of a single-mode Jaynes-Cummings model. This feature can be used to deterministically add or subtract a photon while maintaining a single propagating optical mode. We provide semi-analytic solutions to this problem for Fock states, enabling deterministic and unconditional photon addition and subtraction with fidelity ${\\cal F}>0.996$. Our semi-analytic solutions are provided for both dynamically coupled two-level systems and for three-level systems whose dynamical coupling is controlled by a coherent laser drive. Moving beyond individual Fock states, we further showcase the ability to subtract and add single photons to photon-number superposition states. We show that Schr{\\\"o}dinger cat states can be prepared from squeezed vacuum input via cascaded subtraction or cascaded addition. Finally, we show that our photon-addition process can be used to add a photon to any squeezed and displaced state with high success probability and fidelity ${\\cal F}>0.99$, thereby potentially converting quantum emitters from single-photon sources to sources of single-photon-added Gaussian states without the need for inline squeezing. Our protocols provide a path towards integrating quantum emitters to construct efficient sources of single-mode non-Gaussian light beyond single photons.",
+            "link": "https://arxiv.org/abs/2512.09711",
+            "arxiv_id": "2512.09711v2",
+            "base_arxiv_id": "2512.09711",
+            "version": 2,
+            "published_datetime": "2025-12-10T14:57:58+00:00",
+            "updated_datetime": "2026-09-13T17:17:47+00:00",
+            "published": "2025-12-10 14:57 UTC",
+            "updated": "2026-09-13 17:17 UTC",
+            "status": "重要版本更新",
+            "keywords": [
+              "single photon",
+              "single-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "Indistinguishability Theory for Identical Particles with Invariant Degrees of Freedom",
+            "authors": "Valery Shchesnovich",
+            "summary": "Identical particles have dynamically invariant labels in all setups where their degrees of freedom can be partitioned into two parts, which we call internal and visible, with the visible part subject to unitary evolution, while the dynamically invariant internal part accounts for the partial distinguishability of particles. We give the explicit form of the visible state in terms of the indistinguishability function, generalizing the standard symmetrization/antisymmetrization postulate for bosons/fermions with internal modes. The indistinguishability function on the symmetric group accounts for the permutation symmetry of the dynamically invariant label state and gives a self-contained description of the symmetry spectrum of the visible state. It is shown that the indistinguishability of single particles emitted independently from a stable source is completely characterized by the projective measures on the symmetry spectrum. We reveal a hierarchy of successive upper bounds on the projective measure of indistinguishability in terms of marginal projective measures. We point out an experimentally feasible way to get the upper bounds on the indistinguishability of an arbitrarily large number of single photons by direct experimental readout of their marginal projective measures. We also analyze the indistinguishability of coherent superpositions and convex mixtures and resolve a recently posed problem.",
+            "link": "https://arxiv.org/abs/2609.14428",
+            "arxiv_id": "2609.14428v1",
+            "base_arxiv_id": "2609.14428",
+            "version": 1,
+            "published_datetime": "2026-09-13T11:06:31+00:00",
+            "updated_datetime": "2026-09-13T11:06:31+00:00",
+            "published": "2026-09-13 11:06 UTC",
+            "updated": "2026-09-13 11:06 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "single photon",
+              "single-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph",
+              "math-ph",
+              "math.MP"
+            ]
+          },
+          {
+            "title": "Squeezing measurement with spectrally broadened in microstructured fiber local oscillator",
+            "authors": "A. Chudakov, V. Severin, A. Poshevkina, A. Finochenko, K. Kuznetsov, A. Levchenko, E. Serebryannikov, A. Fedotov, D. Kalashnikov and P. Sharapova",
+            "summary": "Recently, continuous variables (CV) quantum computing, i. e. computing employing squeezed states, has attracted significant attention, as it enables to increase the dimensionality of the system. In CV protocols, homodyne detection plays a key role in the realization of the required gates and operations. Multimode squeezed light generated via parametric down-conversion (PDC) benefits from the broadband bandwidth, which encompasses multiple frequency modes. However, its broadband structure simultaneously requires the precise matching of the local oscillator (LO) with the squeezed light modes for their correct homodyne detection and processing. Achieving such matching is usually a challenging task, since the spectral bandwidth of the local oscillator is typically significantly narrower than the bandwidth of the squeezed-light modes. In this work, we propose and experimentally demonstrate a technique for expanding the bandwidth of the LO by passing it through the microstructured fiber. We validate the proposed concept by measuring squeezing in the modes of multimode squeezed light generated in type-0 and type-II PDC. We show that the broadened LO starts to spectrally match the modes generated via type-II PDC. The presented technique might be beneficial for implementing various CV systems and protocols.",
+            "link": "https://arxiv.org/abs/2609.14454",
+            "arxiv_id": "2609.14454v1",
+            "base_arxiv_id": "2609.14454",
+            "version": 1,
+            "published_datetime": "2026-09-13T11:49:55+00:00",
+            "updated_datetime": "2026-09-13T11:49:55+00:00",
+            "published": "2026-09-13 11:49 UTC",
+            "updated": "2026-09-13 11:49 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "parametric down-conversion"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "Entanglement free Metrology Exploiting Multimode Hong Ou Mandel Sensor Advantage",
+            "authors": "Qian Li and Jianning Han",
+            "summary": "The Hong-Ou-Mandel (HOM) interference in the multimode frequency domain has been widely used in precision metrology, benefiting from robustness against dispersion and phase noise, as well as a large dynamic range and compatibility with fragile samples. Conventional multimode HOM metrology exploits frequency-entangled states, which naturally satisfy bosonic exchange symmetry under any centered symmetric joint spectral distribution, to provide these advantages. However, these entangled states are typically generated via spontaneous parametric down-conversion (SPDC), requiring strong pump lasers that hinder practical implementation. In this paper, we employ frequency product states, which do not possess entanglement or path-mode exchange symmetry, as the probe state and post-select measurement outcomes exhibiting frequency anti-correlation. Our results demonstrate that these metrological advantages arise neither from entanglement nor from bosonic exchange symmetry, but rather from spectral anti-correlation",
+            "link": "https://arxiv.org/abs/2609.14937",
+            "arxiv_id": "2609.14937v1",
+            "base_arxiv_id": "2609.14937",
+            "version": 1,
+            "published_datetime": "2026-09-14T02:31:57+00:00",
+            "updated_datetime": "2026-09-14T02:31:57+00:00",
+            "published": "2026-09-14 02:31 UTC",
+            "updated": "2026-09-14 02:31 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "Hong Ou Mandel",
+              "Hong-Ou-Mandel",
+              "parametric down-conversion",
+              "SPDC",
+              "spontaneous parametric down-conversion"
+            ],
+            "groups": [
+              "Frequency-Domain Quantum Information",
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          }
+        ],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-15"
+      },
+      "physics.app-ph": {
+        "done": true,
+        "papers": [],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-15"
+      },
+      "eess.SP": {
+        "done": true,
+        "papers": [],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-15"
+      },
+      "cs.CV": {
+        "done": true,
+        "papers": [],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-15"
+      },
+      "cs.LG": {
+        "done": true,
+        "papers": [],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-15"
+      }
+    },
+    "oai_until": "2026-09-15"
+  },
   "last_complete_at": "2026-09-13T16:35:43.749869+00:00",
   "last_complete_day": "2026-09-14",
   "not_before": null,
