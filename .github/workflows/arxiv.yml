@@ -10,11 +10,8 @@ on:
       - 'tests/**'
       - '.github/workflows/arxiv.yml'
   schedule:
-    # Singapore time 08:07; later slots only recover incomplete work.
-    - cron: '7 0 * * *'
-    - cron: '17 2 * * *'
-    - cron: '27 6 * * *'
-    - cron: '37 12 * * *'
+    # Beijing/Singapore time 08:00 (UTC 00:00). GitHub may introduce scheduling delay.
+    - cron: '0 0 * * *'
   workflow_dispatch:
     inputs:
       mode:
