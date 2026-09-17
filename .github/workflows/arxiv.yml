@@ -71,9 +71,9 @@ jobs:
           elif [ "$RUN_MODE" = "preview" ]; then
             python -u arxiv_daily_digest_simple.py --dry-run
           elif [ "$RUN_EVENT" = "push" ]; then
-            python -u arxiv_daily_digest_simple.py --dry-run --scheduled
+            python -u arxiv_daily_digest_simple.py --source rss --dry-run --scheduled
           elif [ "$RUN_EVENT" = "schedule" ]; then
-            python -u arxiv_daily_digest_simple.py --scheduled
+            python -u arxiv_daily_digest_simple.py --source rss --scheduled
           else
             python -u arxiv_daily_digest_simple.py
           fi
