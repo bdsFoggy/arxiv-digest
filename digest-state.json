@@ -3,7 +3,7 @@
   "pending": {
     "started_at": "2026-09-17T04:06:00.691528+00:00",
     "cutoff": "2026-09-15T04:06:00.691528+00:00",
-    "config_hash": "23110c5f4cfec1ab7935a4d1879e50e3091cfc6bea4f67a97c464fe4575dfdae",
+    "config_hash": "6c13c004e86dbadfc44b265c637188b5647ff65446ea7d28b91367b917aee12c",
     "batches": {
       "physics.optics": {
         "done": false,
