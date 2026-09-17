@@ -33,7 +33,7 @@ PAGE_SIZE = 100
 KEYWORDS_PER_QUERY = 6
 MAX_PAGES_PER_QUERY = 50
 REQUEST_INTERVAL_SECONDS = 10
-HTTP_TIMEOUT_SECONDS = 45
+HTTP_TIMEOUT_SECONDS = 120
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 RUN_BUDGET_SECONDS = 600
 STATE_PATH = Path(os.getenv("DIGEST_STATE_PATH", "digest-state.json"))
@@ -1243,10 +1243,10 @@ def run(args):
     if args.dry_run:
         log('DRY RUN: no email, delivery checkpoint not advanced')
         return 2 if incomplete else 0
-    if not incomplete or state.get('last_notice_day') != today:
+    if not incomplete:
         send_email(subject, body)
-        if incomplete:
-            state['last_notice_day'] = today
+    else:
+        log('INCOMPLETE: no email sent; saved checkpoint for recovery')
     if not incomplete:
         # Never advance coverage on partial retrieval or before SMTP success.
         state['last_complete_at'] = cycle['started_at']
