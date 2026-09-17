@@ -962,6 +962,44 @@ class BadResumptionToken(RuntimeError):
     pass
 
 
+def build_rss_url(category):
+    return f'https://export.arxiv.org/rss/{category}'
+
+
+def validate_rss(payload):
+    feed = feedparser.parse(payload)
+    if feed.bozo:
+        raise InvalidFeed(f'Invalid RSS XML: {feed.bozo_exception}')
+    if not hasattr(feed, 'entries'):
+        raise InvalidFeed('RSS response has no entries')
+    for entry in feed.entries:
+        if not entry.get('id') or not entry.get('updated', entry.get('published')):
+            raise InvalidFeed('RSS entry is missing id or timestamp')
+        if not getattr(entry, 'tags', None):
+            category = entry.get('arxiv_primary_category', {}).get('term')
+            if category:
+                entry.tags = [{'term': category}]
+    return feed
+
+
+def collect_rss(client, category, progress):
+    log(f'RSS {category}')
+    feed = client.fetch(build_rss_url(category), validate_rss)
+    papers = {}
+    for entry in feed.entries:
+        paper = None
+        for group, keywords in KEYWORD_GROUPS.items():
+            candidate = parse_entry(entry, group, keywords)
+            if candidate:
+                key = candidate['base_arxiv_id']
+                paper = merge_paper(papers[key], candidate) if key in papers else candidate
+                papers[key] = paper
+    progress.update(done=True, papers=encode_papers(list(papers.values())),
+                    token=None, expiration=None, token_day=client.now().date().isoformat())
+    atomic_json(STATE_PATH, client.state)
+
+
+
 def build_oai_url(category, lower, upper, token=None):
     # A token replaces all selection arguments, as required by OAI-PMH.
     params = {'verb': 'ListRecords'}
@@ -1079,7 +1117,7 @@ def collect_oai(client, category, progress):
 
 
 def batch_specs():
-    if SOURCE == 'oai':
+    if SOURCE in ('oai', 'rss'):
         return [(category, category, i, [])
                 for i, category in enumerate(CATEGORIES, 1)]
     return [(f'{gi}-{bi}', group, bi, list(batch))
@@ -1102,6 +1140,8 @@ def begin_cycle(state, now, initial_days):
 def collect_batch(client, group, keywords, progress):
     if SOURCE == 'oai':
         return collect_oai(client, group, progress)
+    if SOURCE == 'rss':
+        return collect_rss(client, group, progress)
     papers = {p['base_arxiv_id']: p for p in decode_papers(progress.get('papers', []))}
     # Restart only the incomplete batch at page 1. Offsets from an older live
     # lastUpdatedDate result set are not stable across runs.
@@ -1267,7 +1307,7 @@ def main():
     parser.add_argument('--scheduled', action='store_true', help='Skip when today already completed')
     parser.add_argument('--initial-days', type=int, default=7,
                         help='First installation backfill; later runs use durable coverage')
-    parser.add_argument('--source', choices=('oai', 'api'), default='oai',
+    parser.add_argument('--source', choices=('rss', 'oai', 'api'), default='rss',
                         help='Official OAI metadata by default; api is the legacy search service')
     args = parser.parse_args()
     SOURCE = args.source
