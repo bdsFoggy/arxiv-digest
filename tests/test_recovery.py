@@ -204,7 +204,7 @@ class RecoveryTests(unittest.TestCase):
                 self.assertEqual(d.run(self.args()), 0)
             self.assertEqual(len(fetched), 1)
             self.assertIn('frequency', fetched[0])
-            self.assertEqual(len(send.call_args_list), 2)
+            self.assertEqual(len(send.call_args_list), 1)
             self.assertIn('1 Papers', send.call_args.args[0])
             state = d.load_state()
             self.assertIsNone(state['pending'])
