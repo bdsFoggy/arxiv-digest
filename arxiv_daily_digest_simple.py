@@ -226,7 +226,10 @@ def parse_arxiv_datetime(value):
         return None
 
     value = value.strip().replace("Z", "+00:00")
-    parsed = datetime.fromisoformat(value)
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        parsed = parsedate_to_datetime(value)
 
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=timezone.utc)
