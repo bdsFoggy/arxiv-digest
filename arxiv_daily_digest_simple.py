@@ -1189,7 +1189,12 @@ def grouped_from_cycle(cycle):
     for key, group, _, _ in batch_specs():
         progress = cycle['batches'].get(key, {})
         for paper in decode_papers(progress.get('papers', [])):
-            grouped[paper['groups'][0] if SOURCE == 'oai' else group].append(paper)
+            if SOURCE == 'oai':
+                target_group = paper['groups'][0]
+            else:
+                target_group = next((g for g in paper.get('groups', []) if g in grouped), group)
+            if target_group in grouped:
+                grouped[target_group].append(paper)
     return deduplicate_all_groups(grouped)
 
 
