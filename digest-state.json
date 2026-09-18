@@ -6,8 +6,681 @@
     "config_hash": "6c13c004e86dbadfc44b265c637188b5647ff65446ea7d28b91367b917aee12c",
     "batches": {
       "physics.optics": {
-        "done": false,
-        "papers": []
+        "done": true,
+        "papers": [
+          {
+            "title": "Aberration sensing in fluorescence microscopy using quantum correlations",
+            "authors": "Shay Elmalem, Shaurya Aarav, Allard K. F. H\\\"ubler, Hugo Defienne, Dan Oron",
+            "summary": "arXiv:2609.19806v1 Announce Type: new Abstract: Widefield fluorescence microscopy is an essential biological imaging tool, yet its penetration depth is fundamentally restricted by tissue-induced aberrations. Correcting these requires precise characterization of the point spread function (PSF), but existing wavefront sensing techniques rely either on often-unavailable guide stars, or on computationally heavy indirect phase retrieval methods, that could struggle in low-contrast regions. Here, we show that the PSF can be mapped directly and non-invasively by exploiting quantum correlations between photons. Standard fluorophores inherently exhibit photon antibunching, effectively acting as sources of ``missing'' photon pairs. By capturing these correlation statistics across a wide field of view using a single-photon avalanche diode (SPAD) array imager, we extract the local PSF autocorrelation directly from the fluorescence emission itself. This approach bypasses the limitations of classical intensity measurements, requiring no iterative or complex numerical optimization. We demonstrate widefield direct PSF retrieval in a second or less, paving the way for real-time operation. By translating quantum optical concepts to conventional fluorescent probes, this technique provides a robust, direct pathway to deep-tissue adaptive optics in life sciences.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19806",
+            "arxiv_id": "oai:arXiv.org:2609.19806v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19806",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "photon pair",
+              "photon-pair",
+              "single photon",
+              "single-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Broadband transverse mode directional couplers using partial Euler bends",
+            "authors": "Airin Antony, Daniel Peace, Jacquiline Romero",
+            "summary": "arXiv:2609.19933v1 Announce Type: new Abstract: Transverse modes beyond the fundamental mode are increasingly being explored to increase information capacity in both mode-division multiplexing and high-dimensional quantum information processing. The ability to combine and separate these modes at arbitrary ratios over a broad bandwidth is central to these applications. Motivated by the lower bending loss and intermodal crosstalk of partial Euler bends in multimode waveguides, we develop a geometric framework based on partial Euler bends for broadband power coupling between the first two transverse electric modes on a silicon-on-insulator platform. Our methodology uses a hybrid of eigenmode expansion and finite-difference time-domain methods. Our designs feature a mode (de)multiplexer, as well as unbalanced couplers (2/3 and 1/3 splitters). The simulated 1-dB bandwidths of our directional couplers range from $101$ nm to $134$ nm. The best-performing fabricated mode (de)multiplexer has a measured 1-dB bandwidth of $90$ nm, a conversion efficiency of $94.0\\%$ and crosstalk below $-18$ dB at $1550$ nm. Our results validate the use of partial Euler bends for broadband transverse mode directional couplers and provide a general framework for their design.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19933",
+            "arxiv_id": "oai:arXiv.org:2609.19933v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19933",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "multimode waveguide",
+              "directional coupler"
+            ],
+            "groups": [
+              "Modes, Couplers & Interfaces"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Power-Bandwidth Scaling of Resonantly Coupled Soliton Microcombs",
+            "authors": "Xinrui Luo, Kaixuan Zhu, Yuanlei Wang, Yinke Cheng, Haoyang Luo, Junqi Wang, Yiwen Yang, Zhenyu Xie, Bei-Bei Li, Qihuang Gong, Qi-Fan Yang",
+            "summary": "arXiv:2609.19941v1 Announce Type: new Abstract: A soliton microcomb requires increasing pump power as its optical bandwidth is broadened. Resonant pumping through an auxiliary microresonator can reduce the power required to sustain a soliton, but simultaneously increases the power required for soliton formation. We show that this competition leads to optimal inter-resonator coupling, and the predicted minimum input pump power scales as the two-thirds power of the comb bandwidth, in contrast to the quadratic scaling under direct pumping. Experiments support the opposing power trends, providing a design rule for power-efficient, ultra-broadband soliton microcombs.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19941",
+            "arxiv_id": "oai:arXiv.org:2609.19941v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19941",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "microcomb",
+              "microresonator"
+            ],
+            "groups": [
+              "Microresonators & Integrated Quantum Systems",
+              "Nonlinear & Electro-Optic Devices"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "High-capacity computing with self-rectification nonlinear optical neural processor",
+            "authors": "Ruicheng Ma, Siyu Dong, Yuzhi Shi, Yuchen Zhu, Hong Luo, Qiang Fu, Hadi Amata, Wolfgang Heidrich, Xiong Dun, Hongfei Jiao, Hui Zhang, Qinghua Song, Zeyong Wei, Zhanshan Wang, Ali Momeni, Romain Fleury, Xinbin Cheng",
+            "summary": "arXiv:2609.19981v1 Announce Type: new Abstract: Artificial intelligence (AI) and neural networks have driven groundbreaking innovations across numerous disciplines. Optical computing offers the promise of unprecedented speed and energy efficiency in the post-Moore era; however, achieving efficient, practical nonlinear activation using all-optical approaches remains a challenge. Here, we present an optical nonlinear neural processing unit (ONNPU) that implements all-optical nonlinear activation through a self-rectification mechanism. The ONNPU architecture perfectly imitates the structure of digital neural networks, enabling seamless integration with the established deep learning ecosystem. We benchmark ONNPU across nine diverse tasks spanning decision, regression and generation, including accuracies of 98.07% on MNIST and 93.54% on Fashion-MNIST. When integrated into a 201-million-parameter Vision Transformer, ONNPU achieves 82.4% top-1 accuracy on full ImageNet classification (1,000 categories); when integrated into a 117-million-parameter decoder-only Transformer, ONNPU enables short-form story generation that outperforms GPT-2. By addressing more complex and diverse deep learning tasks, ONNPU paves the way toward practical optical machine intelligence, unleashing significant potential for high-performance optical computing.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19981",
+            "arxiv_id": "oai:arXiv.org:2609.19981v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19981",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "optical computing"
+            ],
+            "groups": [
+              "Multimodal Imaging & Photonic Computing"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "A Simplified Model for Linear Mode Coupling in Multimode Fibers with Experimental Assessment",
+            "authors": "Paolo Carniello, Filipe M. Ferreira, Fabio A. Barbosa, Ming-Jun Li, Norbert Hanik",
+            "summary": "arXiv:2609.20617v1 Announce Type: new Abstract: We propose a novel surrogate model for linear coupling in graded-index multimode fibers that is computationally more efficient than existing models, and can be tuned through a single measurable parameter. The model is benchmarked numerically and experimentally on a 90-polarization-mode fiber.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.20617",
+            "arxiv_id": "oai:arXiv.org:2609.20617v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.20617",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "mode coupling"
+            ],
+            "groups": [
+              "Modes, Couplers & Interfaces"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Deep-level engineering in aluminum nitride (AlN) enables reliable photodetection in extreme conditions",
+            "authors": "Jiahao Dong, Zhenjing Liu, Sara Tulchinsky, Rafael Jaramillo",
+            "summary": "arXiv:2606.07807v3 Announce Type: replace Abstract: Semiconductor photodetectors are conventionally optimized for sensing weak optical signals, and they typically saturate at low-to-moderate light intensity. Here, we demonstrate AlN photodetectors that exhibit non-saturating linear response to ultra-bright, sub-bandgap light exceeding 40 $\\mathrm{W/cm^2}$ (over 400 Suns). The photodetector further shows undistorted linear response at elevated temperature, up to at least 300 $\\mathrm{^\\circ C}$. This exceptional performance originates from photoresponse mediated by point defects with energy levels deep in the bandgap (deep levels) at the metal-AlN Schottky junction. Through dopant design and contact engineering, we demonstrate that a narrow space-charge region is essential for enabling ultra-bright light detection and accurate measurement. These results establish a strategy for engineering ultra-wide bandgap (UWBG) semiconductor devices for reliable operation in extreme conditions to meet emerging needs in industrial process control, thermal and nuclear power generation, and aeronautics and spaceflight.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2606.07807",
+            "arxiv_id": "oai:arXiv.org:2606.07807v3",
+            "base_arxiv_id": "oai:arXiv.org:2606.07807",
+            "version": 3,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v3）",
+            "keywords": [
+              "AlN",
+              "aluminum nitride"
+            ],
+            "groups": [
+              "Integrated Photonic Materials"
+            ],
+            "categories": [
+              "physics.optics",
+              "cond-mat.mtrl-sci"
+            ]
+          },
+          {
+            "title": "Mapping Source-Resolved Phase-Noise Transfer in Soliton Microcombs",
+            "authors": "Zhongan Zhao, Aleksandr Razumov, Viswanathan Sankar, Jasper Riebesehl, Darko Zibar",
+            "summary": "arXiv:2607.01932v2 Announce Type: replace Abstract: Phase noise limits the coherence and stability of soliton microcombs, yet its origin is difficult to trace because multiple noise sources act simultaneously. It is often represented by common-mode and repetition-rate components, but how each physical source contributes to these components remains unclear. We combine subspace tracking with multi-source Ikeda-map simulations, switching each source and the Raman nonlinearity on and off to isolate its contribution. Without Raman, pump phase noise is purely common-mode, while shot noise and amplified spontaneous emission drive the repetition rate noise. With Raman, the nonlinearity coherently converts pump phase noise from common-mode into repetition-rate noise without introducing an independent noise source, yielding a parabolic linewidth profile with a quiet-point minimum below the pump linewidth. When all noise sources are present, shot noise, ASE, and RIN raise the common-mode floor and shift this minimum toward the pump, setting the achievable noise floor. The intracavity dynamics thus do not merely carry noise but actively partition it, providing a mechanistic basis for low-noise microcomb design.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2607.01932",
+            "arxiv_id": "oai:arXiv.org:2607.01932v2",
+            "base_arxiv_id": "oai:arXiv.org:2607.01932",
+            "version": 2,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v2）",
+            "keywords": [
+              "microcomb"
+            ],
+            "groups": [
+              "Nonlinear & Electro-Optic Devices"
+            ],
+            "categories": [
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Microwave-to-Optical Quantum Transduction of Photons for Quantum Interconnects",
+            "authors": "Akihiko Sekine, Ryo Murakami, Yoshiyasu Doi",
+            "summary": "arXiv:2509.26349v3 Announce Type: replace-cross Abstract: The quantum transduction, or equivalently quantum frequency conversion, is vital for the realization of, e.g., quantum networks, distributed quantum computing, and quantum repeaters. The microwave-to-optical quantum transduction is of particular interest in the field of superconducting quantum computing, since interconnecting dilution refrigerators is considered inevitable for realizing large-scale quantum computers with fault-tolerance. In this review, we overview recent theoretical and experimental studies on the quantum transduction between microwave and optical photons. We describe a generic theory for the quantum transduction employing the input-output formalism, from which the essential quantities characterizing the transduction, i.e., the expressions for the transduction efficiency, the added noise, and the transduction bandwidth are derived. We review the major transduction methods that have been experimentally demonstrated, focusing on the transduction via the optomechanical effect, the electro-optic effect, the magneto-optic effect, and the atomic ensembles. We also briefly review the recent experimental progress on the quantum transduction from superconducting qubit to optical photon, which is an important step toward the quantum state transfer between distant superconducting qubits interconnected over optical fibers.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2509.26349",
+            "arxiv_id": "oai:arXiv.org:2509.26349v3",
+            "base_arxiv_id": "oai:arXiv.org:2509.26349",
+            "version": 3,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v3）",
+            "keywords": [
+              "frequency conversion",
+              "quantum frequency conversion",
+              "electro-optic"
+            ],
+            "groups": [
+              "Nonlinear & Electro-Optic Devices"
+            ],
+            "categories": [
+              "quant-ph",
+              "cond-mat.mes-hall",
+              "physics.app-ph",
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Atom-light hybrid interferometer for atomic sensing with quantum memory",
+            "authors": "Xingchang Wang, Xinyun Liang, Dasen Yang, Liang Dong, Ying Zuo, Jianmin Wang, Linyu Chen, Georgios A. Siviloglou, Z. Y. Ou, J. F. Chen",
+            "summary": "arXiv:2601.18373v2 Announce Type: replace-cross Abstract: Quantum memories feature a reversible conversion of optical fields into long-lived atomic spin waves, and are therefore ideal for operating as sensitive atomic sensors. However, up to now, atom-light interferometers have lacked an efficient approach to exploit their ultimate atomic sensing performance, since an extra optical delay line is required to compensate for the memory time. Here, we report a new protocol that records the photocurrent via heterodyne mixing with a stable local oscillator. The obtained complex quadrature amplitude that carries information imprinted on its phase by an external magnetic field, is successfully recovered from the interference patterns between the light and the atomic spin wave, without the stringent requirement of having them overlap in time. Our results reveal that the sensitivity scales favorably with the lifetime of the quantum memory. Our work may have important applications in building distributed quantum networks through quantum memory-assisted atom-light interferometers.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2601.18373",
+            "arxiv_id": "oai:arXiv.org:2601.18373v2",
+            "base_arxiv_id": "oai:arXiv.org:2601.18373",
+            "version": 2,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v2）",
+            "keywords": [
+              "quantum memory"
+            ],
+            "groups": [
+              "Microresonators & Integrated Quantum Systems"
+            ],
+            "categories": [
+              "quant-ph",
+              "physics.atom-ph",
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Dissipative acousto-mechanical parametric interface between high-overtone acoustics and flexural phonons",
+            "authors": "Xun Ji, Huanying Sun, Longhao Wu, Qichun Liu, Yulong Liu, Mika A. Sillanp\\\"a\\\"a, Tiefu Li",
+            "summary": "arXiv:2605.24581v2 Announce Type: replace-cross Abstract: High-overtone bulk acoustic wave resonators (HBARs) promise advanced phononics, yet achieving nonlinearity remains challenging. We demonstrate a radiation-pressure-type parametric interaction between GHz HBARs and low-frequency flexural modes in a suspended silicon nitride membrane, where mechanical displacement modulates the external dissipation rate to enable dissipative acousto-mechanical coupling. Benefiting from the high quality factor, the system enters the resolved-sideband regime at room temperature, yielding acousto-mechanically induced transparency. We observe tunable Kerr nonlinearity and generate coherent HBAR frequency combs via two-tone driving. Notably, our dissipative coupling strength is 20 times larger than the dispersive coupling, the highest ratio among reported hybrid dissipative-dispersive coupling systems, resulting in the experimental observation of amplification in the reflection spectra under red-sideband driving. The ability to interface dense HBAR modes with a common mechanical resonator provides a scalable on-chip platform for multimode phononic information processing, with quantum phononics potentially achievable at sub-Kelvin temperatures.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2605.24581",
+            "arxiv_id": "oai:arXiv.org:2605.24581v2",
+            "base_arxiv_id": "oai:arXiv.org:2605.24581",
+            "version": 2,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v2）",
+            "keywords": [
+              "silicon nitride"
+            ],
+            "groups": [
+              "Integrated Photonic Materials"
+            ],
+            "categories": [
+              "quant-ph",
+              "cond-mat.mes-hall",
+              "physics.optics"
+            ]
+          }
+        ],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-18"
+      },
+      "quant-ph": {
+        "done": true,
+        "papers": [
+          {
+            "title": "Normalizing Flow-Based Bayesian Parameter Estimation for Noisy Quantum States",
+            "authors": "Hsien-Yi Hsieh, Yuan-Ting Liu, Juan Camilo Rodr{\\i}guez, Yang-Yi Lee, Po-Hang Wang, Ole Steuernagel, Chien-Ming Wu, Ray-Kuang Lee",
+            "summary": "arXiv:2609.19534v1 Announce Type: new Abstract: To extract complete information about experimental noisy quantum states, as well as correlations among different physical parameters, we develop an efficient machine learning-assisted framework with the normalizing flow based Bayesian parameter estimation (BPE). By embedding a physically interpretable parameter vector, ${s}$, into the quantum state ansatzes, $\\rho({s})$, the corresponding parameter distribution $p({s}|D)$ is induced from BPE, based on the available experimental data $D$. The BPE allows us to perform parameter correlation analyses, providing powerful insights about how experimental parameters and related noise sources affect quantum features of the system. As an example, the flexibility of our framework is demonstrated using two different physical ansatzes on the optical cat state experiments, where a noisy single-photon state is added to impure squeezed state. With correlations among the Wigner function negativity, photon-addition fraction, noisy fraction, and pump powers, our framework gives interpretations for complicated experimental mechanisms in generating noisy non-Gaussian states. By leveraging normalizing flow-based neural networks and Bayesian uncertainty estimation, along with physical and experimental constraints incorporated naturally, the valuable information inferred in the posterior learning provides guidelines for experimentalists, as well as theorists, in identifying promising parameters to enhance desirable features.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19534",
+            "arxiv_id": "oai:arXiv.org:2609.19534v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19534",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "single photon",
+              "single-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "Scalable entanglement distribution using encoded hybrid repeater chains",
+            "authors": "Stav Haldar, Saikat Guha, Don Towsley, Filip Rozp\\k{e}dek",
+            "summary": "arXiv:2609.19783v1 Announce Type: new Abstract: Long-distance entanglement distribution requires error correction protocols to compensate for qubit decoherence in quantum memories and noise introduced during entanglement swapping. We argue that repeater chains with error-correction capabilities should exploit more than one physical platform, combining the complementary strengths of different quantum memory technologies into a single hybrid repeater architecture. An important constituent of such an architecture is a hybrid repeater which combines type-1 memories, characterized by fast entanglement generation rates and suitability for multiplexing, and type-2 memories that offer long coherence times and low two-qubit gate error rates. Taking the resource-intensive nature of hybrid nodes into account, we propose and analyze repeater chains in which only a subset of nodes need to be hybrid, while the remaining nodes are simpler first-generation repeaters with no error-correction capability. Through detailed Monte Carlo simulations of fault-tolerant encoded repeater chain protocols based on the three-qubit phase-flip repetition code, the $[[7,1,3]]$ Steane code, and the $[[9,1,3]]$ Shor code, we demonstrate that these hybrid architectures outperform pure architectures based on a single memory platform in terms of end-to-end entanglement distribution rate. In our study we develop a full circuit-level noise model of our architectures and examine the impact of an imperfect interface between the two platforms on our hybrid architecture. We also develop a modified version of the swap-as-soon-as-possible policy with multiplexing, more suited to our architecture where some nodes perform error-correction while others do not. This modified policy significantly reduces the information storage time in memory qubits relative to the previously considered swap policies in encoded repeater chains.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19783",
+            "arxiv_id": "oai:arXiv.org:2609.19783v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19783",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "quantum memory"
+            ],
+            "groups": [
+              "Microresonators & Integrated Quantum Systems"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "90%-Efficient Optical Storage in a Rare-Earth Crystal with a Low-Loss Impedance-Matched Cavity",
+            "authors": "Weiye Sun, Fudong Wang, Mucheng Guo, Xiantong An, Zhenqi Xu, Zhehao Xu, Xingmin He, Matthew J. Sellars, Shuping Liu, and Manjin Zhong",
+            "summary": "arXiv:2609.19807v1 Announce Type: new Abstract: High-efficiency optical storage in rare-earth-ion-doped crystals is challenging because of their typically weak optical absorption,which makes cavity-enhanced memories highly sensitive to parasitic intracavity loss. Here we demonstrate a 90.1(5)% storage efficiency for coherent optical pulses in an impedance-matched cavity atomic-frequency-comb memory based on Eu3+:Y2SiO5. The Brewster-angle configuration of the crystal and fully cryogenic Fabry-P\\'erot cavity reduce the round-trip intracavity loss to 0.37%. Quantitative modeling shows that further improvement is limited primarily by AFC preparation and its associated dispersive response rather than by residual cavity loss,identifying the principal requirements for further approaching unity efficiency.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19807",
+            "arxiv_id": "oai:arXiv.org:2609.19807v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19807",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "cavity-enhanced",
+              "cavity enhanced"
+            ],
+            "groups": [
+              "Microresonators & Integrated Quantum Systems"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "Rydberg quantum antennas for chip-interfaced single-photon source array",
+            "authors": "Yan-Lei Zhang, Dong-Qi Ma, Guang-Jie Chen, Qing-Xuan Jie, Liang Chen, Ya-Dong Hu, Zhu-Bo Wang, Guang-Can Guo, Chang-Ling Zou",
+            "summary": "arXiv:2609.20172v1 Announce Type: new Abstract: We propose a Rydberg quantum antenna, consisting of a one-dimensional chain of neutral atoms trapped in a standing-wave optical tweezer, as a chip-interfaced single-photon source. Rydberg blockade induces a single collective excitation in the atomic chain, while its ordered geometry shapes the photon emission into a directional beam, thereby realizing a quantum antenna that emits strictly one photon at a time. Through numerical simulations, we demonstrate single-photon collection efficiencies into a waveguide exceeding 70\\% through a high-NA lens with a negligible multiple excitation probability. These performance are robust against probabilistic atom loading in the standing-wave dipole traps, requiring only ten atoms, indicating experimental feasibility. The Rydberg quantum antenna thus offers a unique route toward scalable arrays of high-efficiency, high-purity, and identical single-photon sources interfaced with a photonic chip, addressing key challenges in photonic quantum information technology.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.20172",
+            "arxiv_id": "oai:arXiv.org:2609.20172v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.20172",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "single photon",
+              "single-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "Bandwidth-Tunable Quantum Light Source at 1.5 $\\mu$m",
+            "authors": "Wei Wu, Yun-Ru Fan, Ri-Yao Song, Si Shen, Zi-Chang Zhang, Hai-Zhi Song, Hao Li, Li-Xing You, Ping-He Wang, Yan-Yu Wei, Kai Guo, Guang-Can Guo, Qiang Zhou",
+            "summary": "arXiv:2609.20251v1 Announce Type: new Abstract: Quantum light sources constitute a crucial physical resource for the construction of quantum networks. Despite remarkable recent progress, there remains a lack of systematic investigation into the bandwidth tunability of quantum light sources under fixed waveguide parameters. In this work, we demonstrate a broadband quantum light source in the 1.5 $\\mu$m band with tunable bandwidth by changing the temperature of a piece of periodically poled lithium niobate waveguide. In our demonstration, the bandwidth of the quantum light source is tuned from 78.3 nm to 96.2 nm with a temperature change of 1 $^\\circ$C . Under different bandwidths, the generation rates of correlated photon pairs are greater than 6.3 MHz with coincidence-to-accidental ratios consistently being no less than 608. The energy-time entanglement properties are measured by using the Franson interference with two-photon interference visibilities larger than 99.06%. Our results provide an effective method for developing the quantum light sources with tunable bandwidth which has great potential for building the large-scale quantum networks.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.20251",
+            "arxiv_id": "oai:arXiv.org:2609.20251v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.20251",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "lithium niobate",
+              "photon pair",
+              "photon-pair",
+              "quantum light source"
+            ],
+            "groups": [
+              "Integrated Photonic Materials",
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "Observation of multiphoton entanglement in resonance fluoresce",
+            "authors": "Xiao-Long Zhou, Jian Wang, Ze-Min Shen, Dong-Yu Huang, Si-Jian He, Qi-Yang Huang, Yi-Jia Liu, Yu-Shu Chen, Quan Jiang, Chuan-Feng Li, Guang-Can Guo",
+            "summary": "arXiv:2609.19808v1 Announce Type: cross Abstract: Resonance fluorescence, the process in which a single two-level quantum emitter interacts with a near-resonant coherent light, is a cornerstone of quantum optics as a paradigmatic light-matter interaction. Quantum phenomena in resonance fluorescence have been accounted for in terms of one- and two-photon processes; however, the physical processes arising from the interaction of a single two-level atom with higher photon numbers remain unexplored experimentally. Here we experimentally reveal the multiphoton scattering nature of resonance fluorescence, which intrinsically gives rise to multiphoton entanglement. By accessing quantum fluctuations in the field emitted from a cavity-quantum electrodynamics system, we resolve third- and fourth-order photon scattering events from a single two-level atom. In the three-photon component, the scattered photons are shown to be genuinely energy-time entangled, as verified by a violation of Svetlichny's inequality. As a demonstration of an application, a quantum secret sharing protocol (QSS) is implemented using this entangled photon source. Our study refines the descriptive framework of resonance fluorescence and broadens the scope of its investigation. It also establishes a fundamentally simple route for generating multiphoton entangled states for quantum information processing and quantum metrology.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19808",
+            "arxiv_id": "oai:arXiv.org:2609.19808v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19808",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "entangled photon",
+              "entangled-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "physics.atom-ph",
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "Interactive proofs for verifying (quantum) learning and testing",
+            "authors": "Matthias C. Caro, Jens Eisert, Marcel Hinsche, Marios Ioannou, Alexander Nietner, Ryan Sweke",
+            "summary": "arXiv:2410.23969v3 Announce Type: replace Abstract: We consider the problem of testing and learning from data in the presence of resource constraints, such as limited memory or weak data access, which place limitations on the efficiency and feasibility of testing or learning. In particular, we ask the following question: Could a resource-constrained learner/tester use interaction with a resource-unconstrained but untrusted party to solve a learning or testing problem more efficiently than they could without such an interaction? In this work, we answer this question both abstractly and for concrete problems, in two complementary ways: For a wide variety of scenarios, we prove that a resource-constrained learner cannot gain any advantage through classical interaction with an untrusted prover. As a special case, we show that for the vast majority of testing and learning problems in which quantum memory is a meaningful resource, a memory-constrained quantum algorithm cannot overcome its limitations via classical communication with a memory-unconstrained quantum prover. In contrast, when quantum communication is allowed, we construct a variety of interactive proof protocols, for specific learning and testing problems, which allow memory-constrained quantum verifiers to gain significant advantages through delegation to untrusted provers. These results highlight both the limitations and potential of delegating learning and testing problems to resource-rich but untrusted third parties.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2410.23969",
+            "arxiv_id": "oai:arXiv.org:2410.23969v3",
+            "base_arxiv_id": "oai:arXiv.org:2410.23969",
+            "version": 3,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v3）",
+            "keywords": [
+              "quantum memory"
+            ],
+            "groups": [
+              "Microresonators & Integrated Quantum Systems"
+            ],
+            "categories": [
+              "quant-ph",
+              "cs.CC",
+              "cs.DS",
+              "cs.LG"
+            ]
+          },
+          {
+            "title": "Microwave-to-Optical Quantum Transduction of Photons for Quantum Interconnects",
+            "authors": "Akihiko Sekine, Ryo Murakami, Yoshiyasu Doi",
+            "summary": "arXiv:2509.26349v3 Announce Type: replace Abstract: The quantum transduction, or equivalently quantum frequency conversion, is vital for the realization of, e.g., quantum networks, distributed quantum computing, and quantum repeaters. The microwave-to-optical quantum transduction is of particular interest in the field of superconducting quantum computing, since interconnecting dilution refrigerators is considered inevitable for realizing large-scale quantum computers with fault-tolerance. In this review, we overview recent theoretical and experimental studies on the quantum transduction between microwave and optical photons. We describe a generic theory for the quantum transduction employing the input-output formalism, from which the essential quantities characterizing the transduction, i.e., the expressions for the transduction efficiency, the added noise, and the transduction bandwidth are derived. We review the major transduction methods that have been experimentally demonstrated, focusing on the transduction via the optomechanical effect, the electro-optic effect, the magneto-optic effect, and the atomic ensembles. We also briefly review the recent experimental progress on the quantum transduction from superconducting qubit to optical photon, which is an important step toward the quantum state transfer between distant superconducting qubits interconnected over optical fibers.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2509.26349",
+            "arxiv_id": "oai:arXiv.org:2509.26349v3",
+            "base_arxiv_id": "oai:arXiv.org:2509.26349",
+            "version": 3,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v3）",
+            "keywords": [
+              "frequency conversion",
+              "quantum frequency conversion",
+              "electro-optic"
+            ],
+            "groups": [
+              "Nonlinear & Electro-Optic Devices"
+            ],
+            "categories": [
+              "quant-ph",
+              "cond-mat.mes-hall",
+              "physics.app-ph",
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Atom-light hybrid interferometer for atomic sensing with quantum memory",
+            "authors": "Xingchang Wang, Xinyun Liang, Dasen Yang, Liang Dong, Ying Zuo, Jianmin Wang, Linyu Chen, Georgios A. Siviloglou, Z. Y. Ou, J. F. Chen",
+            "summary": "arXiv:2601.18373v2 Announce Type: replace Abstract: Quantum memories feature a reversible conversion of optical fields into long-lived atomic spin waves, and are therefore ideal for operating as sensitive atomic sensors. However, up to now, atom-light interferometers have lacked an efficient approach to exploit their ultimate atomic sensing performance, since an extra optical delay line is required to compensate for the memory time. Here, we report a new protocol that records the photocurrent via heterodyne mixing with a stable local oscillator. The obtained complex quadrature amplitude that carries information imprinted on its phase by an external magnetic field, is successfully recovered from the interference patterns between the light and the atomic spin wave, without the stringent requirement of having them overlap in time. Our results reveal that the sensitivity scales favorably with the lifetime of the quantum memory. Our work may have important applications in building distributed quantum networks through quantum memory-assisted atom-light interferometers.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2601.18373",
+            "arxiv_id": "oai:arXiv.org:2601.18373v2",
+            "base_arxiv_id": "oai:arXiv.org:2601.18373",
+            "version": 2,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v2）",
+            "keywords": [
+              "quantum memory"
+            ],
+            "groups": [
+              "Microresonators & Integrated Quantum Systems"
+            ],
+            "categories": [
+              "quant-ph",
+              "physics.atom-ph",
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Dissipative acousto-mechanical parametric interface between high-overtone acoustics and flexural phonons",
+            "authors": "Xun Ji, Huanying Sun, Longhao Wu, Qichun Liu, Yulong Liu, Mika A. Sillanp\\\"a\\\"a, Tiefu Li",
+            "summary": "arXiv:2605.24581v2 Announce Type: replace Abstract: High-overtone bulk acoustic wave resonators (HBARs) promise advanced phononics, yet achieving nonlinearity remains challenging. We demonstrate a radiation-pressure-type parametric interaction between GHz HBARs and low-frequency flexural modes in a suspended silicon nitride membrane, where mechanical displacement modulates the external dissipation rate to enable dissipative acousto-mechanical coupling. Benefiting from the high quality factor, the system enters the resolved-sideband regime at room temperature, yielding acousto-mechanically induced transparency. We observe tunable Kerr nonlinearity and generate coherent HBAR frequency combs via two-tone driving. Notably, our dissipative coupling strength is 20 times larger than the dispersive coupling, the highest ratio among reported hybrid dissipative-dispersive coupling systems, resulting in the experimental observation of amplification in the reflection spectra under red-sideband driving. The ability to interface dense HBAR modes with a common mechanical resonator provides a scalable on-chip platform for multimode phononic information processing, with quantum phononics potentially achievable at sub-Kelvin temperatures.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2605.24581",
+            "arxiv_id": "oai:arXiv.org:2605.24581v2",
+            "base_arxiv_id": "oai:arXiv.org:2605.24581",
+            "version": 2,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v2）",
+            "keywords": [
+              "silicon nitride"
+            ],
+            "groups": [
+              "Integrated Photonic Materials"
+            ],
+            "categories": [
+              "quant-ph",
+              "cond-mat.mes-hall",
+              "physics.optics"
+            ]
+          },
+          {
+            "title": "Photon-efficient quantum repeater chains via hyperentanglement-assisted purification",
+            "authors": "Vinay Kumar, Krishan Joshi, Claudio Cicconetti",
+            "summary": "arXiv:2608.30786v2 Announce Type: replace Abstract: Linear quantum repeater chains based on Werner-state purification (the BBPSSW protocol) and entanglement swapping (the BDCZ scheme) are fundamental to entanglement distribution in quantum networks. However, they operate under a stringent operation reliability threshold and rely on resource-intensive recurrence purification rounds, each consuming two entangled pairs to probabilistically produce one. In the literature, hyperentanglement has been proposed to exploit multiple degrees of freedom (DOF), such as polarisation and spatial modes, to encode independent entangled states within a single photon pair. This has led to the definition of DAEPP (DOF-Assisted Entanglement Purification Protocol), which we propose to integrate with the BDCZ scheme, resulting in a chain protocol that we call DAHR (DOF-Assisted Hyperentanglement Repeater). The DAEPP step distils the fidelity of a DOF by consuming other(s). In this work, we propose and analyse a DAHR variant which integrates DAEPP at every segment of an end-to-end path combined with BDCZ. We derive a closed-form end-to-end fidelity recursion that embeds single-segment DAEPP into the BDCZ scheme and give a strict resource lower bound for any BDCZ baseline utilising BBPSSW purification to match DAHR's per-segment effective fidelity. At a representative asymmetric operating point informed by prior experiment, we show numerically that matching DAHR's single-photon-pair performance requires two to three rounds of BBPSSW purification. Additionally, below a critical operation reliability, no amount of BBPSSW rounds matches DAHR's one DAEPP round performance.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2608.30786",
+            "arxiv_id": "oai:arXiv.org:2608.30786v2",
+            "base_arxiv_id": "oai:arXiv.org:2608.30786",
+            "version": 2,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v2）",
+            "keywords": [
+              "photon pair",
+              "photon-pair",
+              "single photon",
+              "single-photon"
+            ],
+            "groups": [
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          },
+          {
+            "title": "Programmable Hong--Ou--Mandel interference in a giant-atom beam splitter",
+            "authors": "Ruolin Chai, Lei Du, Guoqing Cai, Alejandro Vivas-Via\\~na, Anton Frisk Kockum, Yong Li",
+            "summary": "arXiv:2609.18530v2 Announce Type: replace Abstract: The Hong--Ou--Mandel (HOM) effect is a hallmark of two-photon quantum interference, in which two indistinguishable photons impinging on a balanced beam splitter bunch into the same output port. Here, we show that a giant atom (GA), coupled to two waveguides through two coupling points each, can function as a programmable HOM interferometer, enabling continuous control over single-photon beam splitting and two-photon interference. This programmability arises from coupling-phase differences in the GA, which tune its self-interference and directionality, and thereby its scattering response. To characterize the two-photon interference, we analyze the scattering of two Gaussian single-photon wave packets injected through different waveguides and evaluate the bunching and antibunching (coincidence) probabilities of the resulting four output ports. At the operating point where the GA acts as an effective 50:50 beam splitter for single photons, we observe a pronounced HOM dip as the relative input delay between the two wave packets is varied. Away from this point, adjusting the coupling phases continuously tunes the two-photon output statistics between bunching into the same output port and antibunching across distinct output ports. In addition, we explore an application to quantum parameter estimation, showing that small deviations of coupling phases can be estimated from the two-photon output statistics, with the achievable sensitivity quantified by the classical Fisher information associated with a binary coincidence measurement. Our giant-atom beam splitter thus provides a programmable platform for two-photon interference in waveguide quantum electrodynamics, with potential applications in quantum information processing, quantum communication, and quantum sensing.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.18530",
+            "arxiv_id": "oai:arXiv.org:2609.18530v2",
+            "base_arxiv_id": "oai:arXiv.org:2609.18530",
+            "version": 2,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v2）",
+            "keywords": [
+              "Hong Ou Mandel",
+              "Hong-Ou-Mandel",
+              "single photon",
+              "single-photon"
+            ],
+            "groups": [
+              "Frequency-Domain Quantum Information",
+              "Quantum Sources & SPDC"
+            ],
+            "categories": [
+              "quant-ph"
+            ]
+          }
+        ],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-18"
+      },
+      "physics.app-ph": {
+        "done": true,
+        "papers": [
+          {
+            "title": "Microwave-to-Optical Quantum Transduction of Photons for Quantum Interconnects",
+            "authors": "Akihiko Sekine, Ryo Murakami, Yoshiyasu Doi",
+            "summary": "arXiv:2509.26349v3 Announce Type: replace-cross Abstract: The quantum transduction, or equivalently quantum frequency conversion, is vital for the realization of, e.g., quantum networks, distributed quantum computing, and quantum repeaters. The microwave-to-optical quantum transduction is of particular interest in the field of superconducting quantum computing, since interconnecting dilution refrigerators is considered inevitable for realizing large-scale quantum computers with fault-tolerance. In this review, we overview recent theoretical and experimental studies on the quantum transduction between microwave and optical photons. We describe a generic theory for the quantum transduction employing the input-output formalism, from which the essential quantities characterizing the transduction, i.e., the expressions for the transduction efficiency, the added noise, and the transduction bandwidth are derived. We review the major transduction methods that have been experimentally demonstrated, focusing on the transduction via the optomechanical effect, the electro-optic effect, the magneto-optic effect, and the atomic ensembles. We also briefly review the recent experimental progress on the quantum transduction from superconducting qubit to optical photon, which is an important step toward the quantum state transfer between distant superconducting qubits interconnected over optical fibers.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2509.26349",
+            "arxiv_id": "oai:arXiv.org:2509.26349v3",
+            "base_arxiv_id": "oai:arXiv.org:2509.26349",
+            "version": 3,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v3）",
+            "keywords": [
+              "frequency conversion",
+              "quantum frequency conversion",
+              "electro-optic"
+            ],
+            "groups": [
+              "Nonlinear & Electro-Optic Devices"
+            ],
+            "categories": [
+              "quant-ph",
+              "cond-mat.mes-hall",
+              "physics.app-ph",
+              "physics.optics"
+            ]
+          }
+        ],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-18"
+      },
+      "eess.SP": {
+        "done": true,
+        "papers": [
+          {
+            "title": "High-Velocity Whip-Mode Microresonator in LTOI Unimorph: Measurement Methodology and Large-Signal Characterization",
+            "authors": "Tzu-Hsuan Hsu, Zihuan Liu, Harshvardhan Gupta, Ziqian Yao, Wei Wang, Vakhtang Chulukhadze, Jack Kramer, Neal Hall, Ruochen Lu",
+            "summary": "arXiv:2609.19468v1 Announce Type: new Abstract: This paper presents the design, characterization, and large-signal measurement methodology of a high-order whip-mode flexural microresonator on a lithium tantalate-on-insulator (LTOI) unimorph platform. A tapered cantilever concentrates kinetic energy at the free tip through a structural velocity amplification effect, with a targeted whip mode at 9.175 MHz exhibiting a measured Q of 691 in air. The results indicate a substantially reduced susceptibility to viscous damping at high modal frequencies. In-air large-signal testing on a separate device confirms tip velocities up to 20 m/s before the reliable measurement range of the laser Doppler vibrometer (LDV) at the tapered tip is exceeded, while the device itself sustains drive levels up to 240 Vpp before failure. Transitioning to vacuum reveals photothermal-induced static bending of the LTOI cantilever under LDV laser illumination, an effect that prohibits direct velocity measurement for these resonators. Hence, it motivates an indirect extraction methodology to be implemented. In this work, a 3.85 times base-to-tip geometric amplification factor, independently calibrated at low drive, is applied to base velocity measurements to infer tip velocity under large-signal conditions. Using this approach with narrowband chirp excitation, a maximum extracted tip velocity of 58.9 m/s is obtained at 192 Vpp, with spectral analysis of the base velocity placing a conservative lower bound of 36.2 m/s on this estimate. Large-signal failure-mode analysis identifies Pt/Au electrode melting at 210 Vpp as the current velocity ceiling. These results suggest that geometric amplification in high-order flexural modes offers a viable pathway toward the high proof-mass velocities targeted for next-generation MEMS inertial sensors.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2609.19468",
+            "arxiv_id": "oai:arXiv.org:2609.19468v1",
+            "base_arxiv_id": "oai:arXiv.org:2609.19468",
+            "version": 1,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新 arXiv 预印本",
+            "keywords": [
+              "lithium tantalate",
+              "microresonator"
+            ],
+            "groups": [
+              "Integrated Photonic Materials",
+              "Microresonators & Integrated Quantum Systems"
+            ],
+            "categories": [
+              "eess.SP"
+            ]
+          }
+        ],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-18"
+      },
+      "cs.CV": {
+        "done": true,
+        "papers": [],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-18"
+      },
+      "cs.LG": {
+        "done": true,
+        "papers": [
+          {
+            "title": "Interactive proofs for verifying (quantum) learning and testing",
+            "authors": "Matthias C. Caro, Jens Eisert, Marcel Hinsche, Marios Ioannou, Alexander Nietner, Ryan Sweke",
+            "summary": "arXiv:2410.23969v3 Announce Type: replace-cross Abstract: We consider the problem of testing and learning from data in the presence of resource constraints, such as limited memory or weak data access, which place limitations on the efficiency and feasibility of testing or learning. In particular, we ask the following question: Could a resource-constrained learner/tester use interaction with a resource-unconstrained but untrusted party to solve a learning or testing problem more efficiently than they could without such an interaction? In this work, we answer this question both abstractly and for concrete problems, in two complementary ways: For a wide variety of scenarios, we prove that a resource-constrained learner cannot gain any advantage through classical interaction with an untrusted prover. As a special case, we show that for the vast majority of testing and learning problems in which quantum memory is a meaningful resource, a memory-constrained quantum algorithm cannot overcome its limitations via classical communication with a memory-unconstrained quantum prover. In contrast, when quantum communication is allowed, we construct a variety of interactive proof protocols, for specific learning and testing problems, which allow memory-constrained quantum verifiers to gain significant advantages through delegation to untrusted provers. These results highlight both the limitations and potential of delegating learning and testing problems to resource-rich but untrusted third parties.",
+            "link": "https://arxiv.org/abs/oai:arXiv.org:2410.23969",
+            "arxiv_id": "oai:arXiv.org:2410.23969v3",
+            "base_arxiv_id": "oai:arXiv.org:2410.23969",
+            "version": 3,
+            "published_datetime": "2026-09-18T04:00:00+00:00",
+            "updated_datetime": "2026-09-18T04:00:00+00:00",
+            "published": "2026-09-18 04:00 UTC",
+            "updated": "2026-09-18 04:00 UTC",
+            "status": "新预印本（当前 v3）",
+            "keywords": [
+              "quantum memory"
+            ],
+            "groups": [
+              "Microresonators & Integrated Quantum Systems"
+            ],
+            "categories": [
+              "quant-ph",
+              "cs.CC",
+              "cs.DS",
+              "cs.LG"
+            ]
+          }
+        ],
+        "token": null,
+        "expiration": null,
+        "token_day": "2026-09-18"
       }
     },
     "oai_until": "2026-09-17"
