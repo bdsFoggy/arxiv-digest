@@ -987,7 +987,20 @@ def validate_rss(payload):
 
 def collect_rss(client, category, progress):
     log(f'RSS {category}')
-    feed = client.fetch(build_rss_url(category), validate_rss)
+    try:
+        feed = client.fetch(build_rss_url(category), validate_rss)
+    except (Deferred, RuntimeError, InvalidFeed, ValueError) as primary_error:
+        # arXiv occasionally rejects one RSS category with 406 while the
+        # same feed is available from the alternate public RSS host.
+        fallback_url = f'https://rss.arxiv.org/rss/{category}'
+        log(f'RSS {category} primary failed: {primary_error}; trying {fallback_url}')
+        try:
+            feed = client.fetch(fallback_url, validate_rss)
+        except (Deferred, RuntimeError, InvalidFeed, ValueError) as fallback_error:
+            raise RuntimeError(
+                f'RSS {category} failed on both public hosts: '
+                f'{primary_error}; fallback: {fallback_error}'
+            ) from fallback_error
     papers = {}
     for entry in feed.entries:
         paper = None
