@@ -973,8 +973,8 @@ def validate_rss(payload):
     feed = feedparser.parse(payload)
     if feed.bozo:
         raise InvalidFeed(f'Invalid RSS XML: {feed.bozo_exception}')
-    if not hasattr(feed, 'entries'):
-        raise InvalidFeed('RSS response has no entries')
+    if not getattr(feed, 'entries', None):
+        raise InvalidFeed('RSS response contains zero entries')
     for entry in feed.entries:
         if not entry.get('id') or not entry.get('updated', entry.get('published')):
             raise InvalidFeed('RSS entry is missing id or timestamp')
@@ -990,17 +990,26 @@ def collect_rss(client, category, progress):
     try:
         feed = client.fetch(build_rss_url(category), validate_rss)
     except (Deferred, RuntimeError, InvalidFeed, ValueError) as primary_error:
-        # arXiv occasionally rejects one RSS category with 406 while the
-        # same feed is available from the alternate public RSS host.
+        # RSS can return HTTP 200 with an empty/invalid cached document.
+        # Retry the alternate host, then use one category Atom request.
         fallback_url = f'https://rss.arxiv.org/rss/{category}'
         log(f'RSS {category} primary failed: {primary_error}; trying {fallback_url}')
         try:
             feed = client.fetch(fallback_url, validate_rss)
         except (Deferred, RuntimeError, InvalidFeed, ValueError) as fallback_error:
-            raise RuntimeError(
-                f'RSS {category} failed on both public hosts: '
-                f'{primary_error}; fallback: {fallback_error}'
-            ) from fallback_error
+            api_url = BASE_URL + urlencode({
+                'search_query': f'cat:{category}',
+                'sortBy': 'lastUpdatedDate',
+                'sortOrder': 'descending',
+                'start': 0,
+                'max_results': PAGE_SIZE,
+            })
+            log(f'RSS {category} fallback failed: {fallback_error}; using category Atom API')
+            feed = client.fetch(api_url)
+            if not getattr(feed, 'entries', None):
+                raise RuntimeError(
+                    f'RSS and category Atom fallback returned no entries for {category}'
+                ) from fallback_error
     papers = {}
     for entry in feed.entries:
         paper = None
