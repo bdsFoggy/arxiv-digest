@@ -879,9 +879,9 @@ class Client:
         atomic_json(STATE_PATH, self.state)
         raise Deferred(f'{reason}; next API request no earlier than {until.isoformat()}')
 
-    def slot(self):
+    def slot(self, bypass_cooldown=False):
         until = parse_arxiv_datetime(self.state.get('not_before'))
-        if until and until > self.now():
+        if not bypass_cooldown and until and until > self.now():
             raise Deferred(f'Server cooldown remains active until {until.isoformat()}')
         pause = 0 if self.last_start is None else max(
             0, REQUEST_INTERVAL_SECONDS - (self.clock() - self.last_start))
@@ -912,11 +912,11 @@ class Client:
         log(f'Retry-After={record["headers"].get("retry-after", "absent")}; '
             f'X-Cache={record["headers"].get("x-cache", "absent")}')
 
-    def fetch(self, url, validator=validate_feed):
+    def fetch(self, url, validator=validate_feed, bypass_cooldown=False):
         # Only 5xx / transport / invalid XML get one short retry.
         # A 429/403 opens one GLOBAL circuit immediately. No endpoint/IP switching.
         for attempt in (1, 2):
-            self.slot()
+            self.slot(bypass_cooldown=bypass_cooldown)
             start = self.clock()
             log(f'API request {self.requests}, attempt {attempt}/2')
             try:
@@ -995,7 +995,7 @@ def collect_rss(client, category, progress):
         fallback_url = f'https://rss.arxiv.org/rss/{category}'
         log(f'RSS {category} primary failed: {primary_error}; trying {fallback_url}')
         try:
-            feed = client.fetch(fallback_url, validate_rss)
+            feed = client.fetch(fallback_url, validate_rss, bypass_cooldown=True)
         except (Deferred, RuntimeError, InvalidFeed, ValueError) as fallback_error:
             api_url = BASE_URL + urlencode({
                 'search_query': f'cat:{category}',
@@ -1005,7 +1005,7 @@ def collect_rss(client, category, progress):
                 'max_results': PAGE_SIZE,
             })
             log(f'RSS {category} fallback failed: {fallback_error}; using category Atom API')
-            feed = client.fetch(api_url)
+            feed = client.fetch(api_url, bypass_cooldown=True)
             if not getattr(feed, 'entries', None):
                 raise RuntimeError(
                     f'RSS and category Atom fallback returned no entries for {category}'
