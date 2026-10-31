@@ -970,21 +970,70 @@ def build_rss_url(category):
 
 
 def validate_rss(payload):
-    feed = feedparser.parse(payload)
-    if feed.bozo:
-        raise InvalidFeed(f'Invalid RSS XML: {feed.bozo_exception}')
-    if not getattr(feed, 'entries', None):
-        raise InvalidFeed('RSS response contains zero entries')
-    for entry in feed.entries:
-        if not entry.get('id') or not entry.get('updated', entry.get('published')):
-            raise InvalidFeed('RSS entry is missing id or timestamp')
-        if not getattr(entry, 'tags', None):
-            category = entry.get('arxiv_primary_category', {}).get('term')
-            if category:
-                entry.tags = [{'term': category}]
-    return feed
+    # Parse arXiv's RSS XML directly.  Some runner environments/versions of
+    # feedparser return an empty entries list for this RSS format even when
+    # the document contains many <item> elements.
+    root = ET.fromstring(payload)
+    items = root.findall('.//item')
+    if not items:
+        raise InvalidFeed('RSS XML contains zero <item> elements')
+
+    entries = []
+    dc_creator = '{http://purl.org/dc/elements/1.1/}creator'
+    for item in items:
+        link = (item.findtext('link') or '').strip()
+        guid = (item.findtext('guid') or link).strip()
+        title = (item.findtext('title') or '').strip()
+        summary = (item.findtext('description') or '').strip()
+        published = (item.findtext('pubDate') or '').strip()
+        categories = [
+            (node.text or '').strip()
+            for node in item.findall('category')
+            if (node.text or '').strip()
+        ]
+        if not guid or not title or not published:
+            raise InvalidFeed('RSS item is missing guid, title, or pubDate')
+        entries.append(SimpleNamespace(
+            id=guid,
+            title=title,
+            summary=summary,
+            published=published,
+            updated=published,
+            authors=[SimpleNamespace(
+                name=(item.findtext(dc_creator) or '').strip()
+            )] if item.findtext(dc_creator) else [],
+            tags=[{'term': category} for category in categories],
+        ))
+    return SimpleNamespace(entries=entries)
 
 
+def collect_rss(client, category, progress):
+    log(f'RSS {category}')
+    try:
+        feed = client.fetch(build_rss_url(category), validate_rss)
+    except (Deferred, RuntimeError, InvalidFeed, ValueError) as primary_error:
+        # A failed RSS response is retried through the alternate host and then
+        # through the category Atom endpoint.  Each fallback bypasses the
+        # cooldown caused by the failed RSS response.
+        fallback_url = f'https://rss.arxiv.org/rss/{category}'
+        log(f'RSS {category} primary failed: {primary_error}; trying {fallback_url}')
+        try:
+            feed = client.fetch(fallback_url, validate_rss, bypass_cooldown=True)
+        except (Deferred, RuntimeError, InvalidFeed, ValueError) as fallback_error:
+            api_url = BASE_URL + urlencode({
+                'search_query': f'cat:{category}',
+                'sortBy': 'lastUpdatedDate',
+                'sortOrder': 'descending',
+                'start': 0,
+                'max_results': PAGE_SIZE,
+            })
+            log(f'RSS {category} fallback failed: {fallback_error}; using category Atom API')
+            feed = client.fetch(api_url, bypass_cooldown=True)
+            if not getattr(feed, 'entries', None):
+                raise RuntimeError(
+                    f'RSS and category Atom fallback returned no entries for {category}'
+                ) from fallback_error
+    papers = {}
 def collect_rss(client, category, progress):
     log(f'RSS {category}')
     try:
