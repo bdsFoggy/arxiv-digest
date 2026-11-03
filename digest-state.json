@@ -1,8 +1,18 @@
 {
   "schema": 1,
-  "pending": null,
+  "pending": {
+    "started_at": "2026-11-03T05:51:53.412224+00:00",
+    "cutoff": "2026-11-01T05:51:53.412224+00:00",
+    "config_hash": "6c13c004e86dbadfc44b265c637188b5647ff65446ea7d28b91367b917aee12c",
+    "batches": {
+      "physics.optics": {
+        "done": false,
+        "papers": []
+      }
+    }
+  },
   "last_complete_at": "2026-11-02T05:05:01.206214+00:00",
   "last_complete_day": "2026-11-02",
-  "not_before": null,
+  "not_before": "2026-11-03T06:53:44.275738+00:00",
   "last_notice_day": "2026-09-17"
 }
